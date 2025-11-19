@@ -1,7 +1,15 @@
+import SmartSheetTable from "../components/SmartSheetTable";
+import TableWithDnD from "../components/TableWithDnD";
 import React from "react";
 
 function Profile() {
-  return <div>Profile</div>;
+  return (
+ <>
+     <TableWithDnD />
+
+   <SmartSheetTable />
+ </>
+  );
 }
 
 export default Profile;

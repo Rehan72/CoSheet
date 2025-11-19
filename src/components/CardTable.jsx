@@ -66,7 +66,7 @@ const CardTable = () => {
 
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
-  const [expandedRows, setExpandedRows] = useState([]);
+  const [expandedRow, setExpandedRow] = useState(null); // Changed to single row ID
 
   const getStatusVariant = (status) => {
     switch (status) {
@@ -114,20 +114,19 @@ const CardTable = () => {
   // Check if a row is selected
   const isRowSelected = (userId) => selectedRows.includes(userId);
 
-  // Handle expand/collapse - now triggered by clicking anywhere on the card
+  // Handle expand/collapse - only one row can be expanded at a time
   const toggleExpand = (userId, event) => {
     // Prevent triggering when clicking on checkbox or dropdown
     if (event.target.closest('[data-prevent-expand]')) {
       return;
     }
-    setExpandedRows(prev =>
-      prev.includes(userId)
-        ? prev.filter(id => id !== userId)
-        : [...prev, userId]
-    );
+    
+    // If clicking the same row that's already expanded, collapse it
+    // Otherwise, expand the new row and collapse any others
+    setExpandedRow(prev => prev === userId ? null : userId);
   };
 
-  const isExpanded = (userId) => expandedRows.includes(userId);
+  const isExpanded = (userId) => expandedRow === userId;
 
   const handleEdit = (user) => {
     console.log("Edit user:", user);
@@ -136,7 +135,10 @@ const CardTable = () => {
   const handleDelete = (user) => {
     setUsers(users.filter(u => u.id !== user.id));
     setSelectedRows(selectedRows.filter(id => id !== user.id));
-    setExpandedRows(expandedRows.filter(id => id !== user.id));
+    // If the deleted row was expanded, clear the expanded state
+    if (expandedRow === user.id) {
+      setExpandedRow(null);
+    }
   };
 
   // Bulk actions
@@ -144,7 +146,10 @@ const CardTable = () => {
     setUsers(users.filter(user => !selectedRows.includes(user.id)));
     setSelectedRows([]);
     setSelectAll(false);
-    setExpandedRows([]);
+    // Clear expanded row if it was among the deleted ones
+    if (selectedRows.includes(expandedRow)) {
+      setExpandedRow(null);
+    }
   };
 
   const handleBulkExport = () => {
@@ -231,10 +236,11 @@ const CardTable = () => {
             <div className="p-6">
               <div className="flex items-start justify-between">
                 {/* Left Section - Checkbox and Basic Info */}
-                <div className="flex items-start gap-4 flex-1">
+                <div className="flex items-start gap-4 flex-1 min-w-0">
                   <div 
                     data-prevent-expand 
                     onClick={(e) => e.stopPropagation()}
+                    className="flex-shrink-0"
                   >
                     <Checkbox
                       checked={isRowSelected(user.id)}
@@ -243,39 +249,41 @@ const CardTable = () => {
                     />
                   </div>
                   
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3">
-                      <h3 className={`text-xl font-bold ${
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 mb-3 flex-wrap">
+                      <h3 className={`text-xl font-bold truncate ${
                         isRowSelected(user.id) 
                           ? 'text-blue-700 dark:text-blue-300' 
                           : 'text-blue-500/90 dark:text-blue-400/90'
                       }`}>
                         {user.name}
                       </h3>
-                      <Badge className={`rounded-full px-3 py-1 text-xs font-semibold border ${getRoleColor(user.role)}`}>
-                        {user.role}
-                      </Badge>
-                      <Badge className={`rounded-full px-3 py-1 text-xs font-semibold border ${getStatusVariant(user.status)}`}>
-                        {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
-                      </Badge>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge className={`rounded-full px-3 py-1 text-xs font-semibold border ${getRoleColor(user.role)}`}>
+                          {user.role}
+                        </Badge>
+                        <Badge className={`rounded-full px-3 py-1 text-xs font-semibold border ${getStatusVariant(user.status)}`}>
+                          {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                        </Badge>
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <Mail className="h-4 w-4 text-blue-500/80" />
-                        <span className="text-blue-500/90 dark:text-blue-400/90">{user.email}</span>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Mail className="h-4 w-4 text-blue-500/80 flex-shrink-0" />
+                        <span className="text-blue-500/90 dark:text-blue-400/90 truncate">{user.email}</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Phone className="h-4 w-4 text-blue-500/80" />
-                        <span className="text-blue-500/90 dark:text-blue-400/90">{user.phone}</span>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Phone className="h-4 w-4 text-blue-500/80 flex-shrink-0" />
+                        <span className="text-blue-500/90 dark:text-blue-400/90 truncate">{user.phone}</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-blue-500/80" />
-                        <span className="text-blue-500/90 dark:text-blue-400/90">{user.address}</span>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <MapPin className="h-4 w-4 text-blue-500/80 flex-shrink-0" />
+                        <span className="text-blue-500/90 dark:text-blue-400/90 truncate">{user.address}</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-blue-500/80" />
-                        <span className="text-blue-500/90 dark:text-blue-400/90">Joined {user.joinDate}</span>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Calendar className="h-4 w-4 text-blue-500/80 flex-shrink-0" />
+                        <span className="text-blue-500/90 dark:text-blue-400/90 truncate">Joined {user.joinDate}</span>
                       </div>
                     </div>
                   </div>
@@ -283,7 +291,7 @@ const CardTable = () => {
 
                 {/* Right Section - Actions and Expand Indicator */}
                 <div 
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 flex-shrink-0 ml-4"
                   data-prevent-expand 
                   onClick={(e) => e.stopPropagation()}
                 >
@@ -319,37 +327,37 @@ const CardTable = () => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent 
                       align="end" 
-                      className="backdrop-blur-sm bg-blue-500/20 dark:bg-blue-500/10 border border-blue-500/30"
+                      className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg"
                     >
-                      <DropdownMenuLabel className="text-blue-500/90">
+                      <DropdownMenuLabel className="text-gray-900 dark:text-white">
                         Actions
                       </DropdownMenuLabel>
-                      <DropdownMenuSeparator className="bg-blue-500/20" />
+                      <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
                       <DropdownMenuItem 
                         onClick={() => handleEdit(user)}
-                        className="flex items-center gap-2 text-blue-500/90 hover:bg-blue-500/20"
+                        className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
                       >
-                        <Eye className="h-4 w-4" />
+                        <Eye className="h-4 w-4 text-blue-500" />
                         View Details
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => handleEdit(user)}
-                        className="flex items-center gap-2 text-blue-500/90 hover:bg-blue-500/20"
+                        className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
                       >
-                        <Edit className="h-4 w-4" />
+                        <Edit className="h-4 w-4 text-blue-500" />
                         Edit User
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => handleEdit(user)}
-                        className="flex items-center gap-2 text-blue-500/90 hover:bg-blue-500/20"
+                        className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
                       >
-                        <Download className="h-4 w-4" />
+                        <Download className="h-4 w-4 text-blue-500" />
                         Export Data
                       </DropdownMenuItem>
-                      <DropdownMenuSeparator className="bg-blue-500/20" />
+                      <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
                       <DropdownMenuItem 
                         onClick={() => handleDelete(user)}
-                        className="flex items-center gap-2 text-red-500/90 hover:bg-red-500/20"
+                        className="flex items-center gap-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 cursor-pointer"
                       >
                         <Trash2 className="h-4 w-4" />
                         Delete User
