@@ -21,6 +21,7 @@ import {
   Filter,
   SortAsc
 } from 'lucide-react';
+import SaveMenu from './SaveMenu';
 
 const Toolbar = ({
   onAddRow,
@@ -39,7 +40,16 @@ const Toolbar = ({
   onFilterData,
   canUndo,
   canRedo,
-  selectedCell
+  selectedCell,
+   onSaveLocal,
+  onSaveJSON,
+  onSaveCSV,
+  onLoadJSON,
+  onClearAll,
+  onAutoSaveToggle,
+  lastSaved,
+  isSaving,
+  autoSaveEnabled
 }) => {
   return (
     <div className="bg-white border-b border-gray-200 px-6 py-3">
@@ -248,11 +258,26 @@ const Toolbar = ({
             </button>
           </div>
         </div>
-
+     
         {/* Right side tools */}
         <div className="flex items-center space-x-2">
           <div className="text-sm text-gray-500">
             {selectedCell ? `Selected: ${String.fromCharCode(65 + selectedCell.col)}${selectedCell.row + 1}` : 'No selection'}
+          </div>
+           <div className="flex items-center space-x-2">
+          {/* Your existing right side tools... */}
+          
+          <SaveMenu
+            onSaveLocal={onSaveLocal}
+            onSaveJSON={onSaveJSON}
+            onSaveCSV={onSaveCSV}
+            onLoadJSON={onLoadJSON}
+            onClearAll={onClearAll}
+            onAutoSaveToggle={onAutoSaveToggle}
+            lastSaved={lastSaved}
+            isSaving={isSaving}
+            autoSaveEnabled={autoSaveEnabled}
+          />
           </div>
         </div>
       </div>

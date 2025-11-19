@@ -24,9 +24,7 @@ function Layout({ children }) {
 
         {/* Main Content */}
         <main className="flex-1 bg-gray-50 dark:bg-gray-400/40 w-full  px-6 py-6 mx-auto">
-          <div className="h-full w-full overflow-auto"> {/* ADD this wrapper */}
-            {children}
-          </div>
+          {children}
         </main>
       </div>
 

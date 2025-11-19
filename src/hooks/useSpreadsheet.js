@@ -20,10 +20,160 @@ export const useSpreadsheet = () => {
   const [history, setHistory] = useState({ past: [], future: [] });
   const [clipboard, setClipboard] = useState(null);
   const [formatting, setFormatting] = useState({});
-
+  const [lastSaved, setLastSaved] = useState(null);
+  const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   // Use refs to avoid dependency issues
   const dataRef = useRef(data);
   const formulasRef = useRef(formulas);
+
+    // Auto-save effect
+  useEffect(() => {
+    if (!autoSaveEnabled) return;
+
+    const autoSaveTimer = setTimeout(() => {
+      if (data.length > 0) {
+        saveToLocalStorage();
+      }
+    }, 2000); // Auto-save after 2 seconds of inactivity
+
+    return () => clearTimeout(autoSaveTimer);
+  }, [data, formulas, autoSaveEnabled]);
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    loadFromLocalStorage();
+  }, []);
+
+  // Save to browser's localStorage
+  const saveToLocalStorage = useCallback((filename = 'cosheet-save') => {
+    try {
+      setIsSaving(true);
+      const saveData = {
+        data,
+        formulas,
+        formatting,
+        version: '1.0',
+        lastModified: new Date().toISOString()
+      };
+      
+      localStorage.setItem('cosheet-data', JSON.stringify(saveData));
+      localStorage.setItem('cosheet-filename', filename);
+      setLastSaved(new Date());
+      
+      console.log('Saved to localStorage');
+      return true;
+    } catch (error) {
+      console.error('Failed to save to localStorage:', error);
+      return false;
+    } finally {
+      setIsSaving(false);
+    }
+  }, [data, formulas, formatting]);
+
+  // Load from browser's localStorage
+  const loadFromLocalStorage = useCallback(() => {
+    try {
+      const saved = localStorage.getItem('cosheet-data');
+      if (saved) {
+        const saveData = JSON.parse(saved);
+        setData(saveData.data || []);
+        setFormulas(saveData.formulas || {});
+        setFormatting(saveData.formatting || {});
+        setLastSaved(new Date(saveData.lastModified));
+        console.log('Loaded from localStorage');
+        return true;
+      }
+    } catch (error) {
+      console.error('Failed to load from localStorage:', error);
+    }
+    return false;
+  }, []);
+
+  // Save as JSON file
+  const saveAsJSON = useCallback((filename = 'cosheet-data') => {
+    try {
+      setIsSaving(true);
+      const saveData = {
+        data,
+        formulas,
+        formatting,
+        metadata: {
+          version: '1.0',
+          created: new Date().toISOString(),
+          totalRows: data.length,
+          totalColumns: data[0]?.length || 0
+        }
+      };
+
+      const blob = new Blob([JSON.stringify(saveData, null, 2)], { 
+        type: 'application/json' 
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${filename}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      setLastSaved(new Date());
+      return true;
+    } catch (error) {
+      console.error('Failed to save as JSON:', error);
+      return false;
+    } finally {
+      setIsSaving(false);
+    }
+  }, [data, formulas, formatting]);
+
+ 
+
+  // Save as CSV (existing exportToExcel enhanced)
+  const saveAsCSV = useCallback((filename = 'cosheet-data') => {
+    try {
+      setIsSaving(true);
+      const csvContent = data.map(row => 
+        row.map(cell => `"${(cell || '').toString().replace(/"/g, '""')}"`).join(',')
+      ).join('\n');
+      
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${filename}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      setLastSaved(new Date());
+      return true;
+    } catch (error) {
+      console.error('Failed to save as CSV:', error);
+      return false;
+    } finally {
+      setIsSaving(false);
+    }
+  }, [data]);
+
+  // Clear all data
+  const clearAllData = useCallback(() => {
+    setData([['']]);
+    setFormulas({});
+    setFormatting({});
+    setSelectedCell(null);
+    localStorage.removeItem('cosheet-data');
+    localStorage.removeItem('cosheet-filename');
+    setLastSaved(null);
+  }, []);
+
+  // Get save status
+  const getSaveStatus = useCallback(() => {
+    return {
+      lastSaved,
+      isSaving,
+      autoSaveEnabled,
+      hasUnsavedChanges: lastSaved && new Date() - lastSaved > 5000 // Example logic
+    };
+  }, [lastSaved, isSaving, autoSaveEnabled]);
 
   // Keep refs updated
   useEffect(() => {
@@ -395,6 +545,29 @@ const reorderColumn = useCallback((oldIndex, newIndex) => {
   });
 }, [data, saveHistory, calculateTotals]);
 
+  // Load from JSON file
+  const loadFromJSON = useCallback((file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const saveData = JSON.parse(event.target.result);
+          setData(saveData.data || []);
+          setFormulas(saveData.formulas || {});
+          setFormatting(saveData.formatting || {});
+          setLastSaved(new Date());
+          saveHistory(saveData.data || []);
+          resolve(true);
+        } catch (error) {
+          console.error('Failed to load JSON file:', error);
+          resolve(false);
+        }
+      };
+      reader.readAsText(file);
+    });
+  }, [saveHistory]);
+
+
   return {
     data,
     selectedCell,
@@ -422,5 +595,17 @@ const reorderColumn = useCallback((oldIndex, newIndex) => {
     filterData,
      reorderRow,
   reorderColumn,
+   saveToLocalStorage,
+    loadFromLocalStorage,
+    saveAsJSON,
+    loadFromJSON,
+    saveAsCSV,
+    clearAllData,
+    getSaveStatus,
+    setAutoSaveEnabled,
+    autoSaveEnabled,
+    lastSaved,
+    isSaving,
+  
   };
 };

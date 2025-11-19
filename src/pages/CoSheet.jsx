@@ -56,7 +56,16 @@ function CoSheet() {
     sortData,
     filterData,
     reorderRow,
-  reorderColumn
+  reorderColumn,
+  saveToLocalStorage,
+  saveAsJSON,
+  saveAsCSV,
+  loadFromJSON,
+  clearAllData,
+  setAutoSaveEnabled, // This was missing
+  lastSaved,
+  isSaving,
+  autoSaveEnabled,
   } = useSpreadsheet();
 
   const { processAICommand, aiThinking, aiResponse } = useAI({ evaluateFormula, getCellValue, data });
@@ -171,6 +180,15 @@ function CoSheet() {
             canUndo={history.past.length > 0}
             canRedo={history.future.length > 0}
             selectedCell={selectedCell}
+            onSaveLocal={saveToLocalStorage}
+            onSaveJSON={saveAsJSON}
+            onSaveCSV={saveAsCSV}
+            onLoadJSON={loadFromJSON}
+            onClearAll={clearAllData}
+            onAutoSaveToggle={setAutoSaveEnabled} // This was missing
+            lastSaved={lastSaved}
+            isSaving={isSaving}
+            autoSaveEnabled={autoSaveEnabled}
           />
 
           {/* View Tabs */}
