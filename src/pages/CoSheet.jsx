@@ -102,10 +102,10 @@ function CoSheet() {
   };
 
   return (
-    <div className="h-screen bg-gray-50 flex flex-col">
+    <div className="h-screen bg-gray-50 flex flex-col max-w-full">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-3">
-        <div className="flex items-center justify-between">
+      <header className="bg-white border-b border-gray-200 px-6 py-3 max-w-full overflow-x-auto">
+        <div className="flex items-center justify-between flex-wrap gap-4 min-w-max">
           <div className="flex items-center space-x-3">
             <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-2 rounded-lg">
               <Calculator className="h-6 w-6 text-white" />
@@ -117,7 +117,7 @@ function CoSheet() {
           </div>
           
           <div className="flex items-center space-x-4">
-            <div className="flex bg-white border border-gray-300 rounded-lg px-3 py-1 w-64">
+            <div className="flex bg-white border border-gray-300 rounded-lg px-3 py-1 w-48">
               <Search className="h-4 w-4 text-gray-400 mt-1" />
               <input 
                 type="text" 
@@ -138,22 +138,22 @@ function CoSheet() {
             
             <button
               onClick={() => setShowCollaboration(!showCollaboration)}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                showCollaboration 
-                  ? 'bg-blue-100 text-blue-700 border border-blue-300' 
+              className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
+                showCollaboration
+                  ? 'bg-blue-100 text-blue-700 border border-blue-300'
                   : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
               }`}
             >
               <Users className="h-4 w-4" />
-              <span>Collaborate</span>
+              <span className="hidden sm:inline">Collaborate</span>
             </button>
-            
+
             <button
               onClick={() => setShowAISidebar(!showAISidebar)}
-              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all"
+              className="flex items-center space-x-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all"
             >
               <Brain className="h-4 w-4" />
-              <span>AI Assistant</span>
+              <span className="hidden sm:inline">AI Assistant</span>
             </button>
           </div>
         </div>

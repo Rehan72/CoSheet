@@ -23,7 +23,7 @@ function Layout({ children }) {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 bg-gray-50 dark:bg-gray-400/40 w-full  px-6 py-6 mx-auto">
+        <main className="flex-1 bg-gray-50 dark:bg-gray-400/40 w-full max-w-screen-2xl px-6 py-6 mx-auto">
           {children}
         </main>
       </div>

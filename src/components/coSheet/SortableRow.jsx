@@ -2,7 +2,7 @@
 import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical } from 'lucide-react';
+import { GripVertical, Plus, Minus, Search } from 'lucide-react';
 
 export const SortableRow = ({ 
   row, 
@@ -44,7 +44,7 @@ export const SortableRow = ({
     >
       {/* Row Header with Drag Handle */}
       <div 
-        className="w-12 bg-gray-50 border-r border-gray-200 flex items-center justify-center text-sm text-gray-600 font-medium sticky left-0 z-10 group relative"
+        className="w-10 sm:w-12 bg-gray-50 border-r border-gray-200 flex items-center justify-center text-sm text-gray-600 font-medium sticky left-0 z-10 group relative"
         style={{ paddingLeft: `${level * 12}px` }}
       >
         {!isTotalRow && (

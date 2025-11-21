@@ -88,10 +88,10 @@ const SpreadsheetGrid = ({
       columnItems={columnItems}
     >
       <div className="h-full overflow-auto">
-        <div className="inline-block min-w-full">
+        <div className="inline-block min-w-full max-w-screen-xl">
           {/* Column Headers */}
           <div className="flex bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
-            <div className="w-12 bg-gray-50 border-r border-gray-200 flex items-center justify-center sticky left-0 z-20">
+            <div className="w-10 sm:w-12 bg-gray-50 border-r border-gray-200 flex items-center justify-center sticky left-0 z-20">
               <button className="p-1 hover:bg-gray-200 rounded">
                 <ChevronDown className="h-4 w-4 text-gray-600" />
               </button>
@@ -183,8 +183,8 @@ const SpreadsheetGrid = ({
                     <div
                       key={colIndex}
                       className={`w-32 h-10 border-r border-b border-gray-200 relative ${
-                        isSelected 
-                          ? 'ring-2 ring-blue-500 bg-blue-50' 
+                        isSelected
+                          ? 'ring-2 ring-blue-500 bg-blue-50'
                           : 'bg-white hover:bg-gray-100'
                       } ${isSearchMatch ? 'bg-yellow-50' : ''}`}
                     >
