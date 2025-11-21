@@ -1,40 +1,28 @@
 import React from "react";
-import { Menu, Bell, User, MoonStar, Sun, Monitor } from "lucide-react";
-import { useTheme } from "./context/ThemePrivider";
+import { Menu, Bell, LogOut, User } from "lucide-react";
 import ThemeToggle from "./Theme-Toggle";
+import { useAuthStore } from "./stores";
+import { useNavigate } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./components/ui/dropdown-menu";
+
 
 function Header({ setSidebarOpen }) {
-  const { theme, setTheme } = useTheme();
-  
-  const handleThemeToggle = () => {
-    const themes = ["light", "dark", "system"];
-    const currentIndex = themes.indexOf(theme);
-    const nextIndex = (currentIndex + 1) % themes.length;
-    const newTheme = themes[nextIndex];
-    setTheme(newTheme);
-  };
+  const user = useAuthStore(state => state.user);
+  const logout = useAuthStore(state => state.logout);
+  const navigate = useNavigate();
 
-  const getThemeIcon = () => {
-    switch (theme) {
-      case "dark":
-        return <Sun size={22} className="text-yellow-500" />;
-      case "system":
-        return <Monitor size={22} className="text-gray-700 dark:text-gray-300" />;
-      default:
-        return <MoonStar size={22} className="text-blue-600/60" />;
-    }
+  const handleLogout = async () => {
+    await logout();
+    navigate("/");
   };
-
-  const getThemeTitle = () => {
-    switch (theme) {
-      case "dark":
-        return "Switch to system theme";
-      case "system":
-        return "Switch to light theme";
-      default:
-        return "Switch to dark theme";
-    }
-  };
+console.log(user);
 
   return (
     <header className="h-16 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 flex items-center px-4 justify-between sticky top-0 z-30">
@@ -52,21 +40,50 @@ function Header({ setSidebarOpen }) {
 
       <div className="flex items-center gap-3">
         <ThemeToggle />
-        {/* <button 
-          onClick={handleThemeToggle}
-          className="p-2 rounded-lg hover:bg-blue-400/20 hover:text-blue-500 dark:hover:bg-gray-700 transition-colors"
-          title={getThemeTitle()}
-        >
-          {getThemeIcon()}
-        </button> */}
-        
+
         <button className="p-2 rounded-lg hover:bg-blue-400/20 hover:text-blue-500 dark:hover:bg-blue-300 transition-colors">
           <Bell size={22} className="text-blue-600/60 dark:text-blue-800" />
         </button>
-        
-        <button className="p-2 rounded-lg hover:bg-blue-400/20 hover:text-blue-500 dark:hover:bg-blue-300 transition-colors">
-          <User size={22} className="text-blue-600/60 dark:text-blue-800" />
-        </button>
+
+<DropdownMenu>
+  <DropdownMenuTrigger asChild>
+    <button className="p-2 rounded-lg hover:bg-blue-400/20 hover:text-blue-500 dark:hover:bg-blue-300 transition-colors">
+      <User size={22} className="text-blue-600/60 dark:text-blue-800" />
+    </button>
+  </DropdownMenuTrigger>
+
+  <DropdownMenuContent
+    align="end"
+    className="w-56 overflow-visible"
+  >
+    <DropdownMenuLabel className="!overflow-visible">
+      <div className="flex items-center gap-2">
+        {user?.avatar?.url ? (
+          <img
+            src={user.avatar.url}
+            alt="User Avatar"
+            className="w-8 h-8 rounded-full"
+            referrerPolicy="no-referrer"
+          />
+        ) : (
+          <User size={16} className="text-gray-500" />
+        )}
+        <div>
+          <p className="text-sm font-medium">{user?.username}</p>
+          <p className="text-xs text-muted-foreground">{user?.email}</p>
+        </div>
+      </div>
+    </DropdownMenuLabel>
+
+    <DropdownMenuSeparator />
+
+    <DropdownMenuItem onClick={handleLogout}>
+      <LogOut className="mr-2 h-4 w-4" />
+      Logout
+    </DropdownMenuItem>
+  </DropdownMenuContent>
+</DropdownMenu>
+
       </div>
     </header>
   );

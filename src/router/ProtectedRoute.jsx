@@ -1,30 +1,17 @@
-import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
-import Layout from "../Layout";
-
+import React from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuthStore } from '../stores';
 
 const ProtectedRoute = ({ children }) => {
-  const [loading, setLoading] = useState(true);
-  const isAuthenticated = true;
-
-  useEffect(() => {
-    // Simulate loading check (replace with actual authentication check)
-    const checkAuth = async () => {
-      // Add any async authentication logic here
-      setLoading(false);
-    };
-    
-    checkAuth();
-  }, []);
-
-  if (loading) return <div>Loading...</div>; // Show loading instead of null
+  const { isAuthenticated } = useAuthStore();
+  const location = useLocation();
 
   if (!isAuthenticated) {
-    return <Navigate to="/" replace />;
+    // Redirect to login page with return url
+    return <Navigate to="/" state={{ from: location }} replace />;
   }
 
-  return <Layout>{children}</Layout>;
+  return children;
 };
-
 
 export default ProtectedRoute;

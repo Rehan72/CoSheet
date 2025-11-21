@@ -10,66 +10,33 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu";
-import { MoreHorizontal, Edit, Trash2, Eye, Download, ChevronDown, ChevronRight, Phone, Mail, MapPin, Calendar } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, Eye, Download, ChevronDown, ChevronRight, Phone, Mail, MapPin, Calendar, User } from "lucide-react";
 
-const CardTable = () => {
-  const [users, setUsers] = useState([
-    {
-      id: "1",
-      name: "John Doe",
-      email: "john@example.com",
-      phone: "+1234567890",
-      address: "New York, NY",
-      role: "Admin",
-      status: "active",
-      joinDate: "2024-01-15",
-      department: "Engineering",
-      lastLogin: "2024-01-20",
-    },
-    {
-      id: "2",
-      name: "Jane Smith",
-      email: "jane@example.com",
-      phone: "+1234567891",
-      address: "San Francisco, CA",
-      role: "User",
-      status: "pending",
-      joinDate: "2024-02-20",
-      department: "Marketing",
-      lastLogin: "2024-02-18",
-    },
-    {
-      id: "3",
-      name: "Mike Johnson",
-      email: "mike@example.com",
-      phone: "+1234567892",
-      address: "Chicago, IL",
-      role: "Moderator",
-      status: "active",
-      joinDate: "2024-01-10",
-      department: "Support",
-      lastLogin: "2024-01-22",
-    },
-    {
-      id: "4",
-      name: "Sarah Wilson",
-      email: "sarah@example.com",
-      phone: "+1234567893",
-      address: "Austin, TX",
-      role: "User",
-      status: "inactive",
-      joinDate: "2024-03-05",
-      department: "Sales",
-      lastLogin: "2024-02-28",
-    },
-  ]);
-
+const CardTable = ({
+  users: initialUsers = [],
+  title = "Users",
+  subtitle = "Manage your users and their information",
+  onEdit,
+  onDelete,
+  onBulkDelete,
+  onBulkExport,
+  showPagination = false,
+  paginationInfo = null,
+  onPrevious,
+  onNext
+}) => {
+  const [users, setUsers] = useState(initialUsers);
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
-  const [expandedRow, setExpandedRow] = useState(null); // Changed to single row ID
+  const [expandedRow, setExpandedRow] = useState(null);
+
+  // Update users when initialUsers prop changes
+  React.useEffect(() => {
+    setUsers(initialUsers);
+  }, [initialUsers]);
 
   const getStatusVariant = (status) => {
-    switch (status) {
+    switch (status?.toLowerCase()) {
       case "active":
         return "bg-green-500/20 text-green-700 dark:text-green-300 border-green-500/30";
       case "inactive":
@@ -82,13 +49,24 @@ const CardTable = () => {
   };
 
   const getRoleColor = (role) => {
-    switch (role) {
-      case "Admin":
+    switch (role?.toLowerCase()) {
+      case "admin":
         return "bg-red-500/20 text-red-700 dark:text-red-300 border-red-500/30";
-      case "Moderator":
+      case "moderator":
         return "bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-500/30";
       default:
         return "bg-blue-500/20 text-blue-700 dark:text-blue-300 border-blue-500/30";
+    }
+  };
+
+  const getGenderColor = (gender) => {
+    switch (gender?.toLowerCase()) {
+      case "male":
+        return "bg-blue-500/20 text-blue-700 dark:text-blue-300 border-blue-500/30";
+      case "female":
+        return "bg-pink-500/20 text-pink-700 dark:text-pink-300 border-pink-500/30";
+      default:
+        return "bg-gray-500/20 text-gray-700 dark:text-gray-300 border-gray-500/30";
     }
   };
 
@@ -114,47 +92,57 @@ const CardTable = () => {
   // Check if a row is selected
   const isRowSelected = (userId) => selectedRows.includes(userId);
 
-  // Handle expand/collapse - only one row can be expanded at a time
+  // Handle expand/collapse
   const toggleExpand = (userId, event) => {
-    // Prevent triggering when clicking on checkbox or dropdown
     if (event.target.closest('[data-prevent-expand]')) {
       return;
     }
-    
-    // If clicking the same row that's already expanded, collapse it
-    // Otherwise, expand the new row and collapse any others
     setExpandedRow(prev => prev === userId ? null : userId);
   };
 
   const isExpanded = (userId) => expandedRow === userId;
 
   const handleEdit = (user) => {
-    console.log("Edit user:", user);
+    if (onEdit) {
+      onEdit(user);
+    } else {
+      console.log("Edit user:", user);
+    }
   };
 
   const handleDelete = (user) => {
-    setUsers(users.filter(u => u.id !== user.id));
-    setSelectedRows(selectedRows.filter(id => id !== user.id));
-    // If the deleted row was expanded, clear the expanded state
-    if (expandedRow === user.id) {
-      setExpandedRow(null);
+    if (onDelete) {
+      onDelete(user);
+    } else {
+      setUsers(users.filter(u => u.id !== user.id));
+      setSelectedRows(selectedRows.filter(id => id !== user.id));
+      if (expandedRow === user.id) {
+        setExpandedRow(null);
+      }
     }
   };
 
   // Bulk actions
   const handleBulkDelete = () => {
-    setUsers(users.filter(user => !selectedRows.includes(user.id)));
-    setSelectedRows([]);
-    setSelectAll(false);
-    // Clear expanded row if it was among the deleted ones
-    if (selectedRows.includes(expandedRow)) {
-      setExpandedRow(null);
+    if (onBulkDelete) {
+      onBulkDelete(selectedRows);
+    } else {
+      setUsers(users.filter(user => !selectedRows.includes(user.id)));
+      setSelectedRows([]);
+      setSelectAll(false);
+      if (selectedRows.includes(expandedRow)) {
+        setExpandedRow(null);
+      }
     }
   };
 
   const handleBulkExport = () => {
-    const selectedUsers = users.filter(user => selectedRows.includes(user.id));
-    console.log("Exporting users:", selectedUsers);
+    if (onBulkExport) {
+      onBulkExport(selectedRows);
+    } else {
+      const selectedUsers = users.filter(user => selectedRows.includes(user.id));
+      console.log("Exporting users:", selectedUsers);
+    }
   };
 
   return (
@@ -164,7 +152,7 @@ const CardTable = () => {
         <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-center justify-between backdrop-blur-sm">
           <div className="flex items-center gap-4">
             <span className="text-blue-500/90 font-medium text-lg">
-              {selectedRows.length} user(s) selected
+              {selectedRows.length} {title.toLowerCase()}(s) selected
             </span>
           </div>
           <div className="flex items-center gap-3">
@@ -199,7 +187,7 @@ const CardTable = () => {
             className="data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
           />
           <span className="text-blue-500/90 font-semibold">
-            Select All ({users.length} users)
+            Select All ({users.length} {title.toLowerCase()})
           </span>
         </div>
         <div className="text-sm text-blue-500/80">
@@ -237,16 +225,26 @@ const CardTable = () => {
               <div className="flex items-start justify-between">
                 {/* Left Section - Checkbox and Basic Info */}
                 <div className="flex items-start gap-4 flex-1 min-w-0">
-                  <div 
-                    data-prevent-expand 
-                    onClick={(e) => e.stopPropagation()}
-                    className="flex-shrink-0"
-                  >
-                    <Checkbox
-                      checked={isRowSelected(user.id)}
-                      onCheckedChange={() => handleRowSelect(user.id)}
-                      className="mt-1 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
-                    />
+                  <div className="flex items-start gap-3 flex-shrink-0">
+                    <div 
+                      data-prevent-expand 
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Checkbox
+                        checked={isRowSelected(user.id)}
+                        onCheckedChange={() => handleRowSelect(user.id)}
+                        className="mt-1 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+                      />
+                    </div>
+                    
+                    {/* User Avatar */}
+                    {user.picture && (
+                      <img 
+                        src={user.picture} 
+                        alt={user.name}
+                        className="w-10 h-10 rounded-full border-2 border-white/20"
+                      />
+                    )}
                   </div>
                   
                   <div className="flex-1 min-w-0">
@@ -263,27 +261,40 @@ const CardTable = () => {
                           {user.role}
                         </Badge>
                         <Badge className={`rounded-full px-3 py-1 text-xs font-semibold border ${getStatusVariant(user.status)}`}>
-                          {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                          {user.status?.charAt(0)?.toUpperCase() + user.status?.slice(1) || 'Active'}
                         </Badge>
+                        {user.gender && (
+                          <Badge className={`rounded-full px-3 py-1 text-xs font-semibold border ${getGenderColor(user.gender)}`}>
+                            {user.gender}
+                          </Badge>
+                        )}
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
                       <div className="flex items-center gap-2 min-w-0">
                         <Mail className="h-4 w-4 text-blue-500/80 flex-shrink-0" />
-                        <span className="text-blue-500/90 dark:text-blue-400/90 truncate">{user.email}</span>
+                        <span className="text-blue-500/90 dark:text-blue-400/90 truncate" title={user.email}>
+                          {user.email}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2 min-w-0">
                         <Phone className="h-4 w-4 text-blue-500/80 flex-shrink-0" />
-                        <span className="text-blue-500/90 dark:text-blue-400/90 truncate">{user.phone}</span>
+                        <span className="text-blue-500/90 dark:text-blue-400/90 truncate" title={user.phone}>
+                          {user.phone}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2 min-w-0">
                         <MapPin className="h-4 w-4 text-blue-500/80 flex-shrink-0" />
-                        <span className="text-blue-500/90 dark:text-blue-400/90 truncate">{user.address}</span>
+                        <span className="text-blue-500/90 dark:text-blue-400/90 truncate" title={user.address}>
+                          {user.address}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2 min-w-0">
                         <Calendar className="h-4 w-4 text-blue-500/80 flex-shrink-0" />
-                        <span className="text-blue-500/90 dark:text-blue-400/90 truncate">Joined {user.joinDate}</span>
+                        <span className="text-blue-500/90 dark:text-blue-400/90 truncate">
+                          Joined {user.joinDate}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -345,7 +356,7 @@ const CardTable = () => {
                         className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
                       >
                         <Edit className="h-4 w-4 text-blue-500" />
-                        Edit User
+                        Edit {title}
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => handleEdit(user)}
@@ -360,7 +371,7 @@ const CardTable = () => {
                         className="flex items-center gap-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 cursor-pointer"
                       >
                         <Trash2 className="h-4 w-4" />
-                        Delete User
+                        Delete {title}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -382,47 +393,71 @@ const CardTable = () => {
                         <span className="text-blue-500/90 font-medium">{user.id}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-blue-500/80">Department:</span>
-                        <span className="text-blue-500/90 font-medium">{user.department}</span>
+                        <span className="text-blue-500/80">Age:</span>
+                        <span className="text-blue-500/90 font-medium">{user.age || 'N/A'}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-blue-500/80">Last Login:</span>
-                        <span className="text-blue-500/90 font-medium">{user.lastLogin}</span>
+                        <span className="text-blue-500/80">Nationality:</span>
+                        <span className="text-blue-500/90 font-medium">{user.nationality || 'N/A'}</span>
+                      </div>
+                      {user._original?.login?.username && (
+                        <div className="flex justify-between">
+                          <span className="text-blue-500/80">Username:</span>
+                          <span className="text-blue-500/90 font-medium">{user._original.login.username}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h4 className="font-semibold text-blue-500/90 text-sm uppercase tracking-wide">
+                      Location Info
+                    </h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-blue-500/80">City:</span>
+                        <span className="text-blue-500/90 font-medium">{user._original?.location?.city || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-blue-500/80">State:</span>
+                        <span className="text-blue-500/90 font-medium">{user._original?.location?.state || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-blue-500/80">Country:</span>
+                        <span className="text-blue-500/90 font-medium">{user._original?.location?.country || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-blue-500/80">Postcode:</span>
+                        <span className="text-blue-500/90 font-medium">{user._original?.location?.postcode || 'N/A'}</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="space-y-3">
                     <h4 className="font-semibold text-blue-500/90 text-sm uppercase tracking-wide">
-                      Account Status
+                      Account Info
                     </h4>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-blue-500/80">Membership:</span>
+                        <span className="text-blue-500/80">Status:</span>
                         <Badge className={getStatusVariant(user.status)}>
                           {user.status}
                         </Badge>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-blue-500/80">Role Level:</span>
+                        <span className="text-blue-500/80">Role:</span>
                         <Badge className={getRoleColor(user.role)}>
                           {user.role}
                         </Badge>
                       </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <h4 className="font-semibold text-blue-500/90 text-sm uppercase tracking-wide">
-                      Quick Actions
-                    </h4>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline" className="text-blue-500/90 border-blue-500/30 hover:bg-blue-500/20">
-                        Send Message
-                      </Button>
-                      <Button size="sm" variant="outline" className="text-blue-500/90 border-blue-500/30 hover:bg-blue-500-20">
-                        Reset Password
-                      </Button>
+                      <div className="flex justify-between">
+                        <span className="text-blue-500/80">Department:</span>
+                        <span className="text-blue-500/90 font-medium">{user.department}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-blue-500/80">Member Since:</span>
+                        <span className="text-blue-500/90 font-medium">{user.joinDate}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -437,42 +472,57 @@ const CardTable = () => {
         <div className="text-center py-16 bg-blue-500/10 dark:bg-blue-500/5 backdrop-blur-sm rounded-2xl border border-blue-500/20">
           <div className="text-blue-500/50 dark:text-blue-400/50 mb-4">
             <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-blue-500/20 dark:bg-blue-500/10 flex items-center justify-center">
-              <span className="text-3xl">👥</span>
+              <User className="h-8 w-8 text-blue-400" />
             </div>
           </div>
           <h3 className="text-xl font-semibold text-blue-500/90 dark:text-blue-400/90 mb-2">
-            No users found
+            No {title.toLowerCase()} found
           </h3>
           <p className="text-blue-500/80 dark:text-blue-400/80 text-lg">
-            Get started by adding a new user to your team.
+            {subtitle}
           </p>
         </div>
       )}
 
-      {/* Footer */}
+      {/* Footer with Pagination */}
       <div className="mt-6 px-4 py-3 border-t border-blue-500/20 bg-white/40 dark:bg-gray-800/40 rounded-xl backdrop-blur-sm">
         <div className="flex items-center justify-between">
           <p className="text-sm text-blue-500/90 dark:text-blue-400/90">
-            Showing {users.length} of {users.length} users
-            {selectedRows.length > 0 && ` • ${selectedRows.length} selected`}
+            {showPagination && paginationInfo ? (
+              <>
+                Showing {paginationInfo.currentPageItems} of {paginationInfo.totalItems} {title.toLowerCase()}
+                {selectedRows.length > 0 && ` • ${selectedRows.length} selected`}
+              </>
+            ) : (
+              <>
+                Showing {users.length} {title.toLowerCase()}
+                {selectedRows.length > 0 && ` • ${selectedRows.length} selected`}
+              </>
+            )}
           </p>
-          <div className="flex items-center space-x-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              disabled
-              className="text-blue-500/90 border-blue-500/30 hover:bg-blue-500/20"
-            >
-              Previous
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="text-blue-500/90 border-blue-500/30 hover:bg-blue-500/20"
-            >
-              Next
-            </Button>
-          </div>
+          
+          {showPagination && paginationInfo && (
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!paginationInfo.previousPage}
+                className="text-blue-500/90 border-blue-500/30 hover:bg-blue-500/20"
+                onClick={onPrevious}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!paginationInfo.nextPage}
+                className="text-blue-500/90 border-blue-500/30 hover:bg-blue-500/20"
+                onClick={onNext}
+              >
+                Next
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

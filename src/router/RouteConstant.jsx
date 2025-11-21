@@ -29,5 +29,5 @@ export default [
      //permission: RoutePermission?.PLATFORM_ADMIN,
      exact: true
    },
-     
+
 ]
