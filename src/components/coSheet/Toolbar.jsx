@@ -52,7 +52,7 @@ const Toolbar = ({
   autoSaveEnabled
 }) => {
   return (
-    <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 overflow-x-auto">
+    <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 overflow-x-auto overflow-y-auto max-h-24">
       <div className="flex items-center justify-between w-max">
         <div className="flex items-center space-x-4">
           {/* File Operations */}

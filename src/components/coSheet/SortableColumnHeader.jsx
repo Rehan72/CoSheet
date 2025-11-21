@@ -36,42 +36,44 @@ export const SortableColumnHeader = ({
   const hasChildColumns = colIndex < data[0]?.length - 1;
 
   return (
-    <div
+    <th
       ref={setNodeRef}
       style={style}
-      className={`w-32 h-8 bg-gray-50 border-r border-gray-200 flex items-center justify-center font-medium text-gray-700 text-sm sticky group relative ${
+      className={`w-32 h-8 bg-gray-50 border border-gray-200 text-xs font-medium text-gray-700 sticky top-0 z-10 group relative ${
         isDragging ? 'shadow-lg bg-blue-50' : ''
-      }`}
+      } p-0`}
     >
-      {!isTotalColumn && (
-        <button
-          {...attributes}
-          {...listeners}
-          className="p-1 hover:bg-gray-200 rounded cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity absolute left-1"
-        >
-          <GripVertical className="h-3 w-3 text-gray-500" />
-        </button>
-      )}
-      
-      {!isTotalColumn && hasChildColumns && (
-        <button
-          onClick={() => onColumnCollapse(colIndex)}
-          className="p-1 hover:bg-gray-200 rounded absolute left-6"
-        >
-          {isCollapsed ? 
-            <Plus className="h-3 w-3" /> : 
-            <Minus className="h-3 w-3" />
-          }
-        </button>
-      )}
-      
-      <span className={!isTotalColumn ? 'ml-10' : 'ml-2'}>{children}</span>
-      
-      {searchQuery && data.some(row => 
-        row[colIndex]?.toString().toLowerCase().includes(searchQuery.toLowerCase())
-      ) && (
-        <Search className="h-3 w-3 text-blue-500 absolute right-2" />
-      )}
-    </div>
+      <div className="w-full h-full flex items-center justify-center relative">
+        {!isTotalColumn && (
+          <button
+            {...attributes}
+            {...listeners}
+            className="p-1 hover:bg-gray-200 rounded cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <GripVertical className="h-3 w-3 text-gray-500" />
+          </button>
+        )}
+        
+        {!isTotalColumn && hasChildColumns && (
+          <button
+            onClick={() => onColumnCollapse(colIndex)}
+            className="p-1 hover:bg-gray-200 rounded"
+          >
+            {isCollapsed ? 
+              <Plus className="h-3 w-3" /> : 
+              <Minus className="h-3 w-3" />
+            }
+          </button>
+        )}
+        
+        <span>{children}</span>
+        
+        {searchQuery && data.some(row => 
+          row[colIndex]?.toString().toLowerCase().includes(searchQuery.toLowerCase())
+        ) && (
+          <Search className="h-3 w-3 text-blue-500 ml-1" />
+        )}
+      </div>
+    </th>
   );
 };

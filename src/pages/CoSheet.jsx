@@ -1,5 +1,5 @@
-// App.jsx (Main Component)
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+// App.jsx (Main Component) - React 19.2 Features
+import React, { useState, useCallback, useRef, useEffect, useDeferredValue, Suspense } from 'react';
 import { 
   Calculator, 
   Download, 
@@ -22,6 +22,12 @@ import { useAI } from '../hooks/useAI';
 import { useCollaboration } from '../hooks/useCollaboration';
 import DataAnalysisView from '../components/DataAnalysisView';
 import ChartView from '../components/ChartView';
+import ErrorBoundary from '../components/ErrorBoundary';
+import { GridLoadingFallback, SidebarLoadingFallback } from '../components/LoadingFallback';
+import PerformanceMonitor from '../components/PerformanceMonitor';
+import EnhancedToolbar from '../components/EnhancedToolbar';
+import NotificationCenter from '../components/NotificationCenter';
+import { useNotifications } from '../hooks/useNotifications';
 
 function CoSheet() {
     const [showAISidebar, setShowAISidebar] = useState(false);
@@ -30,6 +36,13 @@ function CoSheet() {
   const [searchQuery, setSearchQuery] = useState('');
   const [collapsedRows, setCollapsedRows] = useState(new Set());
   const [collapsedColumns, setCollapsedColumns] = useState(new Set([1]));
+  
+  // React 19.2 Notifications for real-time feedback
+  const { notifications, removeNotification, success, error } = useNotifications();
+  
+  // Debug logging
+  console.log('AI Sidebar Show:', showAISidebar);
+  console.log('Collaboration Show:', showCollaboration);
   
   const {
     data,
@@ -71,7 +84,9 @@ function CoSheet() {
   const { processAICommand, aiThinking, aiResponse } = useAI({ evaluateFormula, getCellValue, data });
   const { users, shareSheet, addComment } = useCollaboration();
 
-  const filteredData = searchQuery ? searchData(searchQuery) : data;
+  // React 19.2 Feature: useDeferredValue for responsive search - doesn't block UI
+  const deferredSearchQuery = useDeferredValue(searchQuery);
+  const filteredData = deferredSearchQuery ? searchData(deferredSearchQuery) : data;
 
   const toggleRowCollapse = (rowIndex) => {
     setCollapsedRows(prev => {
@@ -102,10 +117,10 @@ function CoSheet() {
   };
 
   return (
-    <div className="h-screen bg-gray-50 flex flex-col max-w-full">
+    <div className="w-full h-full bg-gray-50 flex flex-col">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-3 max-w-full overflow-x-auto">
-        <div className="flex items-center justify-between flex-wrap gap-4 min-w-max">
+      <header className="bg-white border-b border-gray-200 px-6 py-3 w-full overflow-x-auto">
+          <div className="flex items-center justify-between flex-wrap gap-4 w-full">
           <div className="flex items-center space-x-3">
             <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-2 rounded-lg">
               <Calculator className="h-6 w-6 text-white" />
@@ -137,7 +152,10 @@ function CoSheet() {
             </div>
             
             <button
-              onClick={() => setShowCollaboration(!showCollaboration)}
+              onClick={() => {
+                console.log('Collaborate button clicked');
+                setShowCollaboration(!showCollaboration);
+              }}
               className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
                 showCollaboration
                   ? 'bg-blue-100 text-blue-700 border border-blue-300'
@@ -149,7 +167,10 @@ function CoSheet() {
             </button>
 
             <button
-              onClick={() => setShowAISidebar(!showAISidebar)}
+              onClick={() => {
+                console.log('AI Assistant button clicked');
+                setShowAISidebar(!showAISidebar);
+              }}
               className="flex items-center space-x-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all"
             >
               <Brain className="h-4 w-4" />
@@ -159,9 +180,9 @@ function CoSheet() {
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden w-full relative">
         {/* Main Content */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col w-full min-w-0">
           <Toolbar
             onAddRow={addRow}
             onAddColumn={addColumn}
@@ -192,8 +213,8 @@ function CoSheet() {
           />
 
           {/* View Tabs */}
-          <div className="bg-white border-b border-gray-200 px-6">
-            <div className="flex space-x-4">
+          <div className="bg-white border-b border-gray-200 px-6 overflow-x-auto">
+            <div className="flex space-x-4 whitespace-nowrap">
               {[
                 { id: 'grid', label: 'Grid', icon: Zap },
                 { id: 'chart', label: 'Charts', icon: BarChart3 },
@@ -216,30 +237,34 @@ function CoSheet() {
           </div>
 
           {/* Spreadsheet Area */}
-          <div className="flex-1 overflow-auto bg-white">
-            {activeView === 'grid' && (
-              <SpreadsheetGrid
-               data={filteredData}
-               selectedCell={selectedCell}
-               formulas={formulas}
-               collapsedRows={collapsedRows}
-               collapsedColumns={collapsedColumns}
-               onCellSelect={setSelectedCell}
-               onCellUpdate={updateCell}
-               onFormulaEvaluate={evaluateFormula}
-               onRowCollapse={toggleRowCollapse}
-               onColumnCollapse={toggleColumnCollapse}
-               onRowReorder={reorderRow}
-               onColumnReorder={reorderColumn}
-               searchQuery={searchQuery}
-               />
-            )}
-            {activeView === 'chart' && (
-              <ChartView data={data} />
-            )}
-            {activeView === 'data' && (
-              <DataAnalysisView data={data} />
-            )}
+          <div className="flex-1 overflow-auto bg-white w-full">
+            <ErrorBoundary>
+              <Suspense fallback={<GridLoadingFallback />}>
+                {activeView === 'grid' && (
+                  <SpreadsheetGrid
+                   data={filteredData}
+                   selectedCell={selectedCell}
+                   formulas={formulas}
+                   collapsedRows={collapsedRows}
+                   collapsedColumns={collapsedColumns}
+                   onCellSelect={setSelectedCell}
+                   onCellUpdate={updateCell}
+                   onFormulaEvaluate={evaluateFormula}
+                   onRowCollapse={toggleRowCollapse}
+                   onColumnCollapse={toggleColumnCollapse}
+                   onRowReorder={reorderRow}
+                   onColumnReorder={reorderColumn}
+                   searchQuery={deferredSearchQuery}
+                   />
+                )}
+                {activeView === 'chart' && (
+                  <ChartView data={data} />
+                )}
+                {activeView === 'data' && (
+                  <DataAnalysisView data={data} />
+                )}
+              </Suspense>
+            </ErrorBoundary>
           </div>
 
           <StatusBar 
@@ -254,25 +279,44 @@ function CoSheet() {
 
         {/* Sidebars */}
         {showAISidebar && (
-          <AISidebar
-            onClose={() => setShowAISidebar(false)}
-            onAICommand={processAICommand}
-            thinking={aiThinking}
-            response={aiResponse}
-            data={data}
-            selectedCell={selectedCell}
-          />
+          <ErrorBoundary>
+            <Suspense fallback={<SidebarLoadingFallback />}>
+              <aside className="w-96 h-full bg-white border-l-2 border-blue-500 flex flex-col overflow-hidden shrink-0 z-40 shadow-lg">
+                <AISidebar
+                  onClose={() => setShowAISidebar(false)}
+                  onAICommand={processAICommand}
+                  thinking={aiThinking}
+                  response={aiResponse}
+                  data={data}
+                  selectedCell={selectedCell}
+                />
+              </aside>
+            </Suspense>
+          </ErrorBoundary>
         )}
 
-        {showCollaboration && (
-          <CollaborationPanel
-            onClose={() => setShowCollaboration(false)}
-            users={users}
-            onShare={shareSheet}
-            onAddComment={addComment}
-          />
+        {showCollaboration && !showAISidebar && (
+          <ErrorBoundary>
+            <Suspense fallback={<SidebarLoadingFallback />}>
+              <aside className="w-96 h-full bg-white border-l-2 border-purple-500 flex flex-col overflow-hidden shrink-0 z-40 shadow-lg">
+                <CollaborationPanel
+                  onClose={() => setShowCollaboration(false)}
+                  users={users}
+                  onShare={shareSheet}
+                  onAddComment={addComment}
+                />
+              </aside>
+            </Suspense>
+          </ErrorBoundary>
         )}
       </div>
+
+      {/* React 19.2 Notifications & Performance Monitor */}
+      <NotificationCenter
+        notifications={notifications}
+        onRemove={removeNotification}
+      />
+      <PerformanceMonitor isDevelopment={true} />
     </div>
   );
 }

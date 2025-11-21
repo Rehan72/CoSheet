@@ -4,7 +4,7 @@ const useUIStore = create((set, get) => ({
   // UI State
   sidebarOpen: true,
   activeTab: 'login',
-  theme: 'light',
+  theme: localStorage.getItem('app-theme') || 'light',
   isLoading: false,
   notifications: [],
   
@@ -22,10 +22,13 @@ const useUIStore = create((set, get) => ({
   },
   
   setTheme: (theme) => {
-    set({ theme });
+    const validTheme = (theme === 'dark' || theme === 'light') ? theme : 'light';
+    set({ theme: validTheme });
+    localStorage.setItem('app-theme', validTheme);
     // Also update document class for theme switching
     if (typeof document !== 'undefined') {
-      document.documentElement.classList.toggle('dark', theme === 'dark');
+      document.documentElement.classList.remove('light', 'dark');
+      document.documentElement.classList.add(validTheme);
     }
   },
   

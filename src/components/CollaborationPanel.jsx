@@ -15,9 +15,10 @@ const CollaborationPanel = ({ onClose, users, onShare, onAddComment }) => {
   };
 
   return (
-    <div className="w-80 bg-white border-l border-gray-200 flex flex-col h-full">
+    <div className="flex flex-col h-full w-full bg-white overflow-hidden">
+      {console.log('CollaborationPanel rendering')}
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center space-x-2">
           <UserPlus className="h-4 w-4 text-gray-700" />
           <h2 className="font-semibold text-gray-900">Collaboration</h2>

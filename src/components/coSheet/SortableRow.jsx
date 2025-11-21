@@ -37,50 +37,52 @@ export const SortableRow = ({
   const hasChildRows = rowIndex < row.length - 1 && row[rowIndex + 1]?.[0]?.startsWith('  ');
 
   return (
-    <div 
+    <tr 
       ref={setNodeRef} 
       style={style}
-      className={`flex hover:bg-gray-50 group relative ${isDragging ? 'shadow-lg' : ''}`}
+      className={`hover:bg-gray-50 group ${isDragging ? 'shadow-lg opacity-50' : ''}`}
     >
       {/* Row Header with Drag Handle */}
-      <div 
-        className="w-10 sm:w-12 bg-gray-50 border-r border-gray-200 flex items-center justify-center text-sm text-gray-600 font-medium sticky left-0 z-10 group relative"
+      <td 
+        className="w-12 h-10 bg-gray-50 border border-gray-200 text-sm text-gray-600 font-medium sticky left-0 z-10 group relative p-0"
         style={{ paddingLeft: `${level * 12}px` }}
       >
-        {!isTotalRow && (
-          <button
-            {...attributes}
-            {...listeners}
-            className="p-1 hover:bg-gray-200 rounded cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            <GripVertical className="h-3 w-3 text-gray-500" />
-          </button>
-        )}
-        
-        {!isTotalRow && hasChildRows && (
-          <button
-            onClick={() => onRowCollapse(rowIndex)}
-            className="p-1 hover:bg-gray-200 rounded ml-1"
-          >
-            {isCollapsed ? 
-              <Plus className="h-3 w-3" /> : 
-              <Minus className="h-3 w-3" />
-            }
-          </button>
-        )}
-        
-        <span className="ml-1">{rowIndex + 1}</span>
-        
-        {searchQuery && row.some(cell => 
-          cell.toString().toLowerCase().includes(searchQuery.toLowerCase())
-        ) && (
-          <Search className="h-3 w-3 text-blue-500 absolute right-2" />
-        )}
-      </div>
+        <div className="flex items-center justify-center h-full">
+          {!isTotalRow && (
+            <button
+              {...attributes}
+              {...listeners}
+              className="p-1 hover:bg-gray-200 rounded cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <GripVertical className="h-3 w-3 text-gray-500" />
+            </button>
+          )}
+          
+          {!isTotalRow && hasChildRows && (
+            <button
+              onClick={() => onRowCollapse(rowIndex)}
+              className="p-1 hover:bg-gray-200 rounded ml-1"
+            >
+              {isCollapsed ? 
+                <Plus className="h-3 w-3" /> : 
+                <Minus className="h-3 w-3" />
+              }
+            </button>
+          )}
+          
+          <span className="ml-1 text-xs">{rowIndex + 1}</span>
+          
+          {searchQuery && row.some(cell => 
+            cell.toString().toLowerCase().includes(searchQuery.toLowerCase())
+          ) && (
+            <Search className="h-3 w-3 text-blue-500 ml-auto mr-1" />
+          )}
+        </div>
+      </td>
 
       {/* Row Cells */}
       {children}
-    </div>
+    </tr>
   );
 };
 

@@ -1,4 +1,4 @@
-// hooks/useSpreadsheet.js - FIXED TOTAL CALCULATION
+// hooks/useSpreadsheet.js - React 19.2 Features
 import { useState, useCallback, useEffect, useRef } from 'react';
 
 export const useSpreadsheet = () => {
@@ -27,51 +27,93 @@ export const useSpreadsheet = () => {
   const dataRef = useRef(data);
   const formulasRef = useRef(formulas);
 
-    // Auto-save effect
+  // Use ref to track current state without dependencies
   useEffect(() => {
-    if (!autoSaveEnabled) return;
+    dataRef.current = data;
+    formulasRef.current = formulas;
+  }, [data, formulas]);
 
-    const autoSaveTimer = setTimeout(() => {
-      if (data.length > 0) {
-        saveToLocalStorage();
-      }
-    }, 2000); // Auto-save after 2 seconds of inactivity
-
-    return () => clearTimeout(autoSaveTimer);
-  }, [data, formulas, autoSaveEnabled]);
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    loadFromLocalStorage();
-  }, []);
-
-  // Save to browser's localStorage
-  const saveToLocalStorage = useCallback((filename = 'cosheet-save') => {
+  // useEffectEvent for non-reactive save logic - React 19.2 Feature
+  const performSave = useCallback((filename = 'cosheet-save', format = 'local') => {
     try {
       setIsSaving(true);
-      const saveData = {
-        data,
-        formulas,
-        formatting,
-        version: '1.0',
-        lastModified: new Date().toISOString()
-      };
       
-      localStorage.setItem('cosheet-data', JSON.stringify(saveData));
-      localStorage.setItem('cosheet-filename', filename);
+      switch(format) {
+        case 'local': {
+          const saveData = {
+            data: dataRef.current,
+            formulas: formulasRef.current,
+            formatting,
+            version: '1.0',
+            lastModified: new Date().toISOString()
+          };
+          localStorage.setItem('cosheet-data', JSON.stringify(saveData));
+          localStorage.setItem('cosheet-filename', filename);
+          break;
+        }
+        case 'json': {
+          const jsonData = {
+            data: dataRef.current,
+            formulas: formulasRef.current,
+            formatting,
+            metadata: {
+              version: '1.0',
+              created: new Date().toISOString(),
+              totalRows: dataRef.current.length,
+              totalColumns: dataRef.current[0]?.length || 0
+            }
+          };
+          const jsonBlob = new Blob([JSON.stringify(jsonData, null, 2)], { 
+            type: 'application/json' 
+          });
+          const jsonUrl = URL.createObjectURL(jsonBlob);
+          const jsonA = document.createElement('a');
+          jsonA.href = jsonUrl;
+          jsonA.download = `${filename}.json`;
+          jsonA.click();
+          URL.revokeObjectURL(jsonUrl);
+          break;
+        }
+        case 'csv': {
+          const csvContent = dataRef.current.map(row => 
+            row.map(cell => `"${(cell || '').toString().replace(/"/g, '""')}"`).join(',')
+          ).join('\n');
+          const csvBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const csvUrl = URL.createObjectURL(csvBlob);
+          const csvA = document.createElement('a');
+          csvA.href = csvUrl;
+          csvA.download = `${filename}.csv`;
+          csvA.click();
+          URL.revokeObjectURL(csvUrl);
+          break;
+        }
+      }
+      
       setLastSaved(new Date());
-      
-      console.log('Saved to localStorage');
+      console.log(`Saved to ${format}:`, filename);
       return true;
     } catch (error) {
-      console.error('Failed to save to localStorage:', error);
+      console.error(`Failed to save as ${format}:`, error);
       return false;
     } finally {
       setIsSaving(false);
     }
-  }, [data, formulas, formatting]);
+  }, [formatting]);
 
-  // Load from browser's localStorage
+    // Auto-save effect using useEffectEvent
+  useEffect(() => {
+    if (!autoSaveEnabled) return;
+
+    const autoSaveTimer = setTimeout(() => {
+      if (dataRef.current.length > 0) {
+        performSave('cosheet-autosave', 'local');
+      }
+    }, 2000); // Auto-save after 2 seconds of inactivity
+
+    return () => clearTimeout(autoSaveTimer);
+  }, [autoSaveEnabled, performSave]);
+
+  // Load from browser's localStorage - MUST BE BEFORE useEffect that calls it
   const loadFromLocalStorage = useCallback(() => {
     try {
       const saved = localStorage.getItem('cosheet-data');
@@ -90,69 +132,27 @@ export const useSpreadsheet = () => {
     return false;
   }, []);
 
-  // Save as JSON file
-  const saveAsJSON = useCallback((filename = 'cosheet-data') => {
-    try {
-      setIsSaving(true);
-      const saveData = {
-        data,
-        formulas,
-        formatting,
-        metadata: {
-          version: '1.0',
-          created: new Date().toISOString(),
-          totalRows: data.length,
-          totalColumns: data[0]?.length || 0
-        }
-      };
+  // Load from localStorage on mount
+  useEffect(() => {
+    loadFromLocalStorage();
+  }, [loadFromLocalStorage]);
 
-      const blob = new Blob([JSON.stringify(saveData, null, 2)], { 
-        type: 'application/json' 
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${filename}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      
-      setLastSaved(new Date());
-      return true;
-    } catch (error) {
-      console.error('Failed to save as JSON:', error);
-      return false;
-    } finally {
-      setIsSaving(false);
-    }
-  }, [data, formulas, formatting]);
+  // Simplified saveToLocalStorage using performSave
+  const saveToLocalStorage = useCallback((filename = 'cosheet-save') => {
+    return performSave(filename, 'local');
+  }, [performSave]);
+
+  // Save as JSON file - use performSave
+  const saveAsJSON = useCallback((filename = 'cosheet-data') => {
+    return performSave(filename, 'json');
+  }, [performSave]);
 
  
 
-  // Save as CSV (existing exportToExcel enhanced)
+  // Save as CSV
   const saveAsCSV = useCallback((filename = 'cosheet-data') => {
-    try {
-      setIsSaving(true);
-      const csvContent = data.map(row => 
-        row.map(cell => `"${(cell || '').toString().replace(/"/g, '""')}"`).join(',')
-      ).join('\n');
-      
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${filename}.csv`;
-      a.click();
-      URL.revokeObjectURL(url);
-      
-      setLastSaved(new Date());
-      return true;
-    } catch (error) {
-      console.error('Failed to save as CSV:', error);
-      return false;
-    } finally {
-      setIsSaving(false);
-    }
-  }, [data]);
+    return performSave(filename, 'csv');
+  }, [performSave]);
 
   // Clear all data
   const clearAllData = useCallback(() => {
@@ -184,7 +184,7 @@ export const useSpreadsheet = () => {
     formulasRef.current = formulas;
   }, [formulas]);
 
-  const saveHistory = useCallback((newData) => {
+  const saveHistory = useCallback(() => {
     setHistory(prev => ({
       past: [...prev.past, dataRef.current],
       future: []
@@ -192,7 +192,7 @@ export const useSpreadsheet = () => {
   }, []);
 
   // SIMPLIFIED formula evaluation that actually works
-  const evaluateFormula = useCallback((formula, contextData, rowIndex, colIndex) => {
+  const evaluateFormula = useCallback((formula, contextData) => {
     try {
       if (!formula.startsWith('=')) return formula;
       
@@ -254,7 +254,6 @@ export const useSpreadsheet = () => {
   const calculateTotals = useCallback((currentData) => {
     const newData = currentData.map(row => [...row]);
     const numRows = newData.length;
-    const numCols = newData[0]?.length || 0;
 
     // Calculate product totals (row totals)
     for (let row = 2; row < numRows - 1; row++) {
@@ -400,8 +399,8 @@ export const useSpreadsheet = () => {
   const searchData = useCallback((query) => {
     if (!query) return data;
     
-    return data.map((row, rowIndex) => 
-      row.map((cell, colIndex) => {
+    return data.map((row) => 
+      row.map((cell) => {
         const cellValue = cell.toString().toLowerCase();
         const searchTerm = query.toLowerCase();
         

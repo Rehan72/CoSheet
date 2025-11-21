@@ -23,15 +23,15 @@ function Layout({ children }) {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 bg-gray-50 dark:bg-gray-400/40 w-full max-w-screen-2xl px-6 py-6 mx-auto">
+        <main className="flex-1 bg-gray-50 dark:bg-gray-400/40 overflow-auto w-full">
           {children}
         </main>
       </div>
 
       {/* Footer */}
-     
+      <footer className="bg-white dark:bg-gray-400/40 shadow-md z-20 relative">
         <Footer />
-      
+      </footer>
     </div>
   );
 }

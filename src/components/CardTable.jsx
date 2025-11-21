@@ -344,21 +344,21 @@ const CardTable = ({
                         Actions
                       </DropdownMenuLabel>
                       <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
-                      <DropdownMenuItem 
+                      <DropdownMenuItem
                         onClick={() => handleEdit(user)}
                         className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
                       >
                         <Eye className="h-4 w-4 text-blue-500" />
                         View Details
                       </DropdownMenuItem>
-                      <DropdownMenuItem 
+                      <DropdownMenuItem
                         onClick={() => handleEdit(user)}
                         className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
                       >
                         <Edit className="h-4 w-4 text-blue-500" />
                         Edit {title}
                       </DropdownMenuItem>
-                      <DropdownMenuItem 
+                      <DropdownMenuItem
                         onClick={() => handleEdit(user)}
                         className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
                       >

@@ -43,9 +43,10 @@ const AISidebar = ({ onClose, onAICommand, thinking, response, data }) => {
   ];
 
   return (
-    <div className="w-80 sm:w-96 bg-white border-l border-gray-200 flex flex-col h-full">
+    <div className="flex flex-col h-full w-full bg-white overflow-hidden">
+      {console.log('AISidebar rendering')}
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center space-x-2">
           <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-1.5 rounded-lg">
             <Brain className="h-4 w-4 text-white" />

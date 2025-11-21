@@ -9,22 +9,29 @@ const ThemeProviderContext = createContext(initialState);
 
 export function ThemeProvider({
   children,
-  defaultTheme = "system",
+  defaultTheme = "light",
   storageKey = "app-theme",
   ...props
 }) {
-  const [theme, setTheme] = useState(
-    () => localStorage.getItem(storageKey) || defaultTheme
-  );
+  const [theme, setTheme] = useState(() => {
+    const stored = localStorage.getItem(storageKey);
+    // If nothing is stored or stored value is invalid, use default light theme
+    if (!stored || (stored !== "light" && stored !== "dark" && stored !== "system")) {
+      localStorage.setItem(storageKey, defaultTheme);
+      return defaultTheme;
+    }
+    return stored;
+  });
   
   
 
   useEffect(() => {
     const root = window.document.documentElement;
+    const themeToApply = theme || "light";
 
     root.classList.remove("light", "dark");
 
-    if (theme === "system") {
+    if (themeToApply === "system") {
       const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
         .matches
         ? "dark"
@@ -34,7 +41,8 @@ export function ThemeProvider({
       return;
     }
 
-    root.classList.add(theme);
+    root.classList.add(themeToApply);
+    localStorage.setItem("app-theme", themeToApply);
   }, [theme]);
 
   const value = {
