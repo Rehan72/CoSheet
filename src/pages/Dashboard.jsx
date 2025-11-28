@@ -6,6 +6,7 @@ import React, { useState, useEffect, Suspense, useDeferredValue } from "react";
 import { getRequest } from "../services/AxiosBaseService";
 import ErrorBoundary from "../components/ErrorBoundary";
 import { SidebarLoadingFallback } from "../components/LoadingFallback";
+import MainContent from "../components/studio/MainContent";
 
 // React 19.2: Extracted content component for better Suspense boundary control
 function DashboardContent({ users, paginationInfo, onEdit, onDelete, onBulkDelete, onBulkExport, onPrevious, onNext }) {
@@ -224,6 +225,7 @@ function Dashboard() {
           onExport={handleExport}
         />
       </Suspense>
+      {/* <MainContent activeSection={"Dashboards"}  activeSubSection={"Aura-I"}/> */}
     </ErrorBoundary>
   );
 }

@@ -40,7 +40,7 @@ const MainContent = ({ activeSection, activeSubSection }) => {
           <div className="flex-1 bg-white rounded-lg border border-gray-200 flex items-center justify-center">
             <div className="text-center text-gray-500">
               <p className="text-lg">{activeSection} Portfolio</p>
-              <p className="text-sm mt-2">Browse {activeSection.toLowerCase()} projects</p>
+              <p className="text-sm mt-2">Browse {activeSection?.toLowerCase()} projects</p>
             </div>
           </div>
         </div>
@@ -53,7 +53,7 @@ const MainContent = ({ activeSection, activeSubSection }) => {
         <div className="h-full flex flex-col">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-800">{activeSection}</h1>
-            <p className="text-gray-600 mt-1">Manage your {activeSection.toLowerCase()}</p>
+            <p className="text-gray-600 mt-1">Manage your {activeSection?.toLowerCase()}</p>
           </div>
           <div className="flex-1 bg-white rounded-lg border border-gray-200 flex items-center justify-center">
             <div className="text-center text-gray-500">
@@ -80,7 +80,7 @@ const MainContent = ({ activeSection, activeSubSection }) => {
         <div className="flex-1 bg-white rounded-lg border border-gray-200 flex items-center justify-center">
           <div className="text-center text-gray-500">
             <p className="text-lg">{activeSection} Content</p>
-            <p className="text-sm mt-2">Working on {activeSection.toLowerCase()} projects</p>
+            <p className="text-sm mt-2">Working on {activeSection?.toLowerCase()} projects</p>
           </div>
         </div>
       </div>

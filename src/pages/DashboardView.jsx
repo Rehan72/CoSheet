@@ -1,5 +1,5 @@
 // components/DashboardView.js - Additional component for better organization
-import React from 'react';
+
 
 export const DashboardAuraI = () => (
   <div className="h-full flex flex-col">
