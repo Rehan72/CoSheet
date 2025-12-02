@@ -1,8 +1,12 @@
 import Profile from "../pages/Profile";
 import CoSheet from "../pages/CoSheet";
 import Dashboard from "../pages/Dashboard";
-import UserList from "@/pages/users/UserList";
-import AddUser from "@/pages/users/AddUser";
+import UserList from "../pages/users/UserList";
+import AddUser from "../pages/users/AddUser";
+import Orgination from "../pages/orgination/Orgination";
+import AddOgination from "../pages/orgination/AddOgination";
+import OrganizationHierarchy from "../pages/orgination/OrganizationHierarchy";
+import OrganizationHierarchyTest from "../pages/orgination/OrganizationHierarchyTest";
 
 
 
@@ -28,6 +32,30 @@ export default [
    {
      element: Profile,
      path: `profile`,
+     //permission: RoutePermission?.PLATFORM_ADMIN,
+     exact: true
+   },
+   {
+     element: Orgination,
+     path: `orgination`,
+     //permission: RoutePermission?.PLATFORM_ADMIN,
+     exact: true
+   },
+   {
+     element: AddOgination,
+     path: `addorgination`,
+     //permission: RoutePermission?.PLATFORM_ADMIN,
+     exact: true
+   },
+   {
+     element: OrganizationHierarchy,
+     path: `organization-hierarchy/:orgId?`,
+     //permission: RoutePermission?.PLATFORM_ADMIN,
+     exact: true
+   },
+   {
+     element: OrganizationHierarchyTest,
+     path: `organization-hierarchy-test`,
      //permission: RoutePermission?.PLATFORM_ADMIN,
      exact: true
    },

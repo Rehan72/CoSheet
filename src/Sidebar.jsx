@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Home, User, X, Columns2,SheetIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { User2Icon } from "lucide-react";
+import { OrigamiIcon } from "lucide-react";
 
 
 function Sidebar({ sidebarOpen, setSidebarOpen }) {
@@ -15,7 +16,8 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
 
   const menu = [
     { name: "Dashboard", path: "/dashboard", icon: <Home size={18} /> },
-    { name: "UserLIst", path: "/userlist", icon: <User2Icon size={18} /> },
+    { name: "Orgination", path: "/orgination", icon: <OrigamiIcon size={18} /> },
+    { name: "UserList", path: "/userlist", icon: <User2Icon size={18} /> },
     { name: "Co-Sheet", path: "/cosheet", icon: <SheetIcon size={18} /> },
     { name: "Profile", path: "/profile", icon: <User size={18} /> },
     
