@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { getRequest } from "../../services/AxiosBaseService";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
@@ -45,6 +45,7 @@ import {
 import { DatePicker } from "../../components/ui/date-picker";
 import ErrorBoundary from "../../components/ErrorBoundary";
 import { SidebarLoadingFallback } from "../../components/LoadingFallback";
+import { useOrganizationStore } from "../../stores";
 
 // Form validation helper
 const validateForm = (formData) => {
@@ -82,13 +83,31 @@ const validateForm = (formData) => {
 function AddUser() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { orgId, adminId } = useParams();
   const userId = searchParams.get("id");
   const isEditMode = Boolean(userId);
+
+  const {
+    currentOrganization,
+    organizations,
+    organizationAdmins,
+    loading: orgLoading,
+    error: orgError,
+    fetchOrganizationById,
+    fetchOrganizations,
+    fetchOrganizationAdmins,
+    setCurrentOrganization
+  } = useOrganizationStore();
 
   const [loading, setLoading] = useState(false);
   const [fetchingUser, setFetchingUser] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null); // 'success' | 'error' | null
   const [errors, setErrors] = useState({});
+
+  // Organization selection state
+  const [selectedOrgId, setSelectedOrgId] = useState(orgId || null);
+  const [selectedAdminId, setSelectedAdminId] = useState(adminId || null);
+  const [adminsLoading, setAdminsLoading] = useState(false);
 
   // Advanced Form Features
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
@@ -145,8 +164,56 @@ function AddUser() {
     department: "",
     gender: "",
     dateOfBirth: "",
-    picture: "",
+    picture: null,
   });
+  const [imagePreview, setImagePreview] = useState(null);
+
+  // Fetch organization data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        await fetchOrganizations();
+        if (orgId) {
+          await fetchOrganizationById(orgId);
+        }
+      } catch (error) {
+        console.error("Error fetching organization data:", error);
+      }
+    };
+
+    fetchData();
+  }, [orgId, fetchOrganizations, fetchOrganizationById]);
+
+  // Update selected organization when orgId changes
+  useEffect(() => {
+    if (orgId) {
+      setSelectedOrgId(orgId);
+    }
+  }, [orgId]);
+
+  // Update selected admin when adminId changes
+  useEffect(() => {
+    if (adminId) {
+      setSelectedAdminId(adminId);
+    }
+  }, [adminId]);
+
+  // Fetch admins when organization changes
+  useEffect(() => {
+    if (selectedOrgId) {
+      const fetchAdmins = async () => {
+        try {
+          setAdminsLoading(true);
+          await fetchOrganizationAdmins(selectedOrgId);
+        } catch (error) {
+          console.error("Error fetching admins:", error);
+        } finally {
+          setAdminsLoading(false);
+        }
+      };
+      fetchAdmins();
+    }
+  }, [selectedOrgId, fetchOrganizationAdmins]);
 
   // Fetch user data if in edit mode
   useEffect(() => {
@@ -452,6 +519,15 @@ function AddUser() {
     addToFormHistory(name, value, previousValue);
   };
 
+  // Handle file upload
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData(prev => ({ ...prev, picture: file }));
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
   // Handle blur validation
   const handleBlur = (e) => {
     const { name, value } = e.target;
@@ -505,9 +581,17 @@ function AddUser() {
         picture: { large: formData.picture },
       };
 
+      // Prepare user data with organization context
+      const userDataWithOrg = {
+        ...userData,
+        organizationId: selectedOrgId || orgId || organizations[0]?.id?.toString(),
+        organizationName: currentOrganization?.name || organizations.find(o => o.id == (selectedOrgId || orgId))?.name,
+        adminId: selectedAdminId || adminId
+      };
+
       // In a real app, you would make an API call here
       // For demo, we'll simulate success
-      console.log("Submitting user data:", userData);
+      console.log("Submitting user data:", userDataWithOrg);
 
       // Simulate API delay
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -516,7 +600,17 @@ function AddUser() {
 
       // Navigate back after success
       setTimeout(() => {
-        navigate("/userlist");
+        if (selectedOrgId && selectedAdminId) {
+          navigate(`/organization-hierarchy/${selectedOrgId}?admin=${selectedAdminId}`);
+        } else if (selectedOrgId) {
+          navigate(`/organization-hierarchy/${selectedOrgId}`);
+        } else if (orgId && adminId) {
+          navigate(`/organization-hierarchy/${orgId}?admin=${adminId}`);
+        } else if (orgId) {
+          navigate(`/organization-hierarchy/${orgId}`);
+        } else {
+          navigate("/userlist");
+        }
       }, 1500);
     } catch (err) {
       console.error("Error saving user:", err);
@@ -528,8 +622,55 @@ function AddUser() {
 
   // Handle cancel
   const handleCancel = () => {
-    navigate("/userlist");
+    if (selectedOrgId && selectedAdminId) {
+      navigate(`/organization-hierarchy/${selectedOrgId}?admin=${selectedAdminId}`);
+    } else if (selectedOrgId) {
+      navigate(`/organization-hierarchy/${selectedOrgId}`);
+    } else if (orgId && adminId) {
+      navigate(`/organization-hierarchy/${orgId}?admin=${adminId}`);
+    } else if (orgId) {
+      navigate(`/organization-hierarchy/${orgId}`);
+    } else {
+      navigate("/userlist");
+    }
   };
+
+  // Handle organization selection change
+  const handleOrganizationChange = (orgId) => {
+    setSelectedOrgId(orgId);
+    // Set the selected organization as current organization
+    const selectedOrg = organizations.find(org => org.id == orgId);
+    if (selectedOrg) {
+      setCurrentOrganization(selectedOrg);
+    }
+  };
+
+  // Handle admin selection change
+  const handleAdminChange = (adminId) => {
+    setSelectedAdminId(adminId);
+  };
+
+  if (orgLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <SidebarLoadingFallback />
+      </div>
+    );
+  }
+
+  if (orgError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-lg text-red-500/90 mb-4">{orgError}</div>
+          <Button onClick={() => fetchOrganizations()} variant="outline">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (fetchingUser) {
     return (
@@ -541,7 +682,8 @@ function AddUser() {
 
   return (
     <ErrorBoundary>
-      <div className="p-6 max-w-4xl mx-auto">
+      <div className="p-6 space-y-6">
+        <div className=" mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
@@ -558,7 +700,9 @@ function AddUser() {
                 {isEditMode ? "Edit User" : "Add New User"}
               </h1>
               <p className="text-blue-500/80 mt-1">
-                {isEditMode
+                {currentOrganization
+                  ? `Adding user to ${currentOrganization.name}`
+                  : isEditMode
                   ? "Update user information and settings"
                   : "Create a new user account"}
               </p>
@@ -746,10 +890,10 @@ function AddUser() {
             </h2>
             <div className="flex items-center gap-6">
               <div className="relative">
-                {formData.picture ? (
+                {imagePreview ? (
                   <img
-                    src={formData.picture}
-                    alt="Profile"
+                    src={imagePreview}
+                    alt="Profile preview"
                     className="w-24 h-24 rounded-full border-4 border-blue-500/20 object-cover"
                   />
                 ) : (
@@ -760,24 +904,30 @@ function AddUser() {
               </div>
               <div className="flex-1">
                 <Label htmlFor="picture" className="text-blue-600/80 dark:text-blue-400/80">
-                  Profile Image URL
+                  Upload Profile Image
                 </Label>
                 <div className="flex gap-2 mt-1">
                   <Input
                     id="picture"
                     name="picture"
-                    value={formData.picture}
-                    onChange={handleChange}
-                    placeholder="https://example.com/image.jpg"
-                    className="border-blue-500/30 focus:border-blue-500 bg-white/50 dark:bg-gray-800/50"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="border-blue-500/30 focus:border-blue-500 bg-white/50 dark:bg-gray-800/50 file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                   />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="border-blue-500/30 text-blue-500/90 hover:bg-blue-500/20"
-                  >
-                    <Upload className="h-4 w-4" />
-                  </Button>
+                  {formData.picture && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setFormData(prev => ({ ...prev, picture: null }));
+                        setImagePreview(null);
+                      }}
+                      className="border-red-500/30 text-red-500/90 hover:bg-red-500/20"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
@@ -1069,6 +1219,81 @@ function AddUser() {
             </div>
           </div>
 
+          {/* Organization Information */}
+          <div className="bg-white/50 dark:bg-gray-800/30 border border-blue-500/20 rounded-xl p-6 backdrop-blur-sm">
+            {/* Organization Selection */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-2 flex items-center gap-2">
+                  <Building className="h-5 w-5" />
+                  Select Organization
+                </h3>
+                <p className="text-sm text-blue-500/80">
+                  Choose the organization to add user to
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Select
+                  value={selectedOrgId?.toString() || ""}
+                  onValueChange={handleOrganizationChange}
+                >
+                  <SelectTrigger className="w-[250px] border-blue-500/30 bg-white/50 dark:bg-gray-800/50">
+                    <SelectValue placeholder="Select organization" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {organizations.map((org) => (
+                      <SelectItem key={org.id} value={org.id.toString()}>
+                        {org.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Admin Selection (if organization is selected) */}
+            {selectedOrgId && (
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-4">
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-2 flex items-center gap-2">
+                    <User className="h-5 w-5" />
+                    Select Admin
+                  </h3>
+                  <p className="text-sm text-blue-500/80">
+                    Choose the admin to add user under
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={selectedAdminId?.toString() || ""}
+                    onValueChange={handleAdminChange}
+                  >
+                    <SelectTrigger className="w-[250px] border-blue-500/30 bg-white/50 dark:bg-gray-800/50">
+                      <SelectValue placeholder="Select admin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {adminsLoading ? (
+                        <SelectItem value="loading" disabled>
+                          Loading admins...
+                        </SelectItem>
+                      ) : organizationAdmins.length > 0 ? (
+                        organizationAdmins.map((admin) => (
+                          <SelectItem key={admin.id} value={admin.id.toString()}>
+                            {admin.name} ({admin.role})
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-admins" disabled>
+                          No admins found for this organization
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Form Actions */}
           <div className="flex items-center justify-end gap-4 pt-4">
             <Button
@@ -1099,6 +1324,7 @@ function AddUser() {
             </Button>
           </div>
         </form>
+      </div>
       </div>
     </ErrorBoundary>
   );

@@ -10,7 +10,8 @@ const mockOrganizations = [
     status: 'active',
     address: '123 Tech Park, Silicon Valley, CA',
     industry: 'Technology',
-    createdAt: '2023-01-15'
+    createdAt: '2023-01-15',
+    logo: 'https://dummyimage.com/150x150/000/fff&text=Tech+Innovations'
   },
   {
     id: 2,
@@ -20,7 +21,8 @@ const mockOrganizations = [
     status: 'active',
     address: '456 Business Ave, New York, NY',
     industry: 'Consulting',
-    createdAt: '2022-11-22'
+    createdAt: '2022-11-22',
+    logo: 'https://dummyimage.com/150x150/000/fff&text=Global+Solutions'
   }
 ];
 
@@ -182,6 +184,36 @@ const mockUsers = {
 };
 
 const MockOrganizationService = {
+  // Create new organization (mock implementation)
+  createOrganization: async (orgData) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const newOrgId = Math.max(...mockOrganizations.map(org => org.id), 0) + 1;
+
+        const newOrganization = {
+          id: newOrgId,
+          name: orgData.orgname,
+          email: orgData.email,
+          phone: orgData.phone,
+          address: orgData.address,
+          country: orgData.country,
+          state: orgData.state,
+          ownerName: orgData.ownerName,
+          ownerPhone: orgData.ownerPhone,
+          website: orgData.website,
+          industry: orgData.industry,
+          description: orgData.description,
+          status: 'active',
+          createdAt: new Date().toISOString().split('T')[0],
+          logo: orgData.logo || 'https://dummyimage.com/150x150/000/fff&text=New+Org'
+        };
+
+        mockOrganizations.push(newOrganization);
+        resolve({ success: true, data: newOrganization });
+      }, 500);
+    });
+  },
+
   // Get all organizations
   getAllOrganizations: async () => {
     return new Promise((resolve) => {
@@ -313,6 +345,66 @@ const MockOrganizationService = {
         }
 
         resolve({ success: true, data: newUser });
+      }, 500);
+    });
+  },
+
+  // Remove admin from organization (mock implementation)
+  removeAdminFromOrganization: async (orgId, adminId) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        if (!mockAdmins[orgId]) {
+          resolve({ success: false, error: 'Organization or admin not found' });
+          return;
+        }
+
+        const adminIndex = mockAdmins[orgId].findIndex(a => a.id === parseInt(adminId));
+        if (adminIndex === -1) {
+          resolve({ success: false, error: 'Admin not found' });
+          return;
+        }
+
+        // Remove the admin
+        const [removedAdmin] = mockAdmins[orgId].splice(adminIndex, 1);
+
+        // Also remove the admin's users
+        if (mockUsers[adminId]) {
+          delete mockUsers[adminId];
+        }
+
+        resolve({ success: true, data: removedAdmin });
+      }, 500);
+    });
+  },
+
+  // Update admin in organization (mock implementation)
+  updateAdminInOrganization: async (orgId, adminId, adminData) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        if (!mockAdmins[orgId]) {
+          resolve({ success: false, error: 'Organization not found' });
+          return;
+        }
+
+        const admin = mockAdmins[orgId].find(a => a.id === parseInt(adminId));
+        if (!admin) {
+          resolve({ success: false, error: 'Admin not found' });
+          return;
+        }
+
+        // Update admin properties
+        const updatedAdmin = {
+          ...admin,
+          ...adminData,
+          id: admin.id, // Keep the original ID
+          organizationId: admin.organizationId // Keep the original organization ID
+        };
+
+        // Find and replace the admin in the array
+        const adminIndex = mockAdmins[orgId].findIndex(a => a.id === parseInt(adminId));
+        mockAdmins[orgId][adminIndex] = updatedAdmin;
+
+        resolve({ success: true, data: updatedAdmin });
       }, 500);
     });
   }

@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Plus, Shield } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import React from "react";
 import { useNavigate } from "react-router-dom";
@@ -11,10 +11,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { DatePicker } from "../../components/ui/date-picker";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table";
 import { Users } from "lucide-react";
+import useOrganizationStore from "../../stores/organizationStore";
 
 function Orgination() {
     const navigate = useNavigate();
-      const [loading, setLoading] = useState(true);
       const [searchTerm, setSearchTerm] = useState("");
       const [statusFilter, setStatusFilter] = useState("all");
       const [dateRangeFilter, setDateRangeFilter] = useState({ start: "", end: "" });
@@ -22,7 +22,7 @@ function Orgination() {
 // Advanced Features State
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [columnVisibility, setColumnVisibility] = useState({
-    avatar: true,
+    logo: true,
     name: true,
     email: true,
     phone: true,
@@ -30,12 +30,30 @@ function Orgination() {
     actions: true,
   });
 
-  const organizations = [
-    { id: 1, name: 'Org 1', email: 'org1@example.com', phone: '+1-234-567-8901', avatar: 'https://via.placeholder.com/40', status: 'active' },
-    { id: 2, name: 'Org 2', email: 'org2@example.com', phone: '+1-234-567-8902', avatar: 'https://via.placeholder.com/40', status: 'inactive' },
+  // Get organizations from store
+  const { organizations, loading, fetchOrganizations } = useOrganizationStore();
+
+  // Fallback data if store doesn't load
+  const fallbackOrganizations = [
+    { id: 1, name: 'Tech Innovations Inc.', email: 'contact@techinnovations.com', phone: '+1-555-123-4567', status: 'active', logo: 'https://dummyimage.com/150x150/000/fff&text=Tech+Innovations' },
+    { id: 2, name: 'Global Solutions Ltd.', email: 'info@globalsolutions.com', phone: '+1-555-987-6543', status: 'active', logo: 'https://dummyimage.com/150x150/000/fff&text=Global+Solutions' },
   ];
 
-  const filteredUsers = organizations.filter(org => {
+  const orgsToUse = organizations.length > 0 ? organizations : fallbackOrganizations;
+
+  useEffect(() => {
+    // Fetch organizations when component mounts
+    fetchOrganizations();
+
+    // Add timeout to prevent infinite loading
+    const timeout = setTimeout(() => {
+      console.log('Timeout reached, checking organizations:', organizations);
+    }, 3000);
+
+    return () => clearTimeout(timeout);
+  }, [fetchOrganizations]);
+
+  const filteredUsers = orgsToUse.filter(org => {
     const matchesSearch = !searchTerm ||
       org.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       org.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -44,17 +62,9 @@ function Orgination() {
     return matchesSearch && matchesStatus;
   });
 
-  useEffect(() => {
-    // Simulate loading delay
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1500);
-
-    return () => clearTimeout(timer);
-  }, []);
 
   const columns = [
-    { key: 'avatar', label: 'Avatar' },
+    { key: 'logo', label: 'Logo' },
     { key: 'name', label: 'Name' },
     { key: 'email', label: 'Email' },
     { key: 'phone', label: 'Phone' },
@@ -63,16 +73,15 @@ function Orgination() {
   ];
 
    const handleAddOrgination=()=>{
-        navigate("/addorgination");
-    }
+       navigate("/orgination/addorgination");
+   }
 
     const handleView = (org) => {
-        // Navigate to view page or open modal
-        console.log('View organization:', org);
+        navigate(`/orgination/vieworgination/${org.id}`);
     };
 
     const handleEdit = (org) => {
-        navigate(`/editorgination/${org.id}`);
+        navigate(`/orgination/editorgination/${org.id}`);
     };
 
     // Column visibility toggle
@@ -94,13 +103,24 @@ function Orgination() {
   };
 
 
- if (loading) {
+ if (loading && orgsToUse.length === 0) {
+    // Add a timeout to prevent infinite loading
+    setTimeout(() => {
+      console.log('Still loading, organizations:', organizations);
+      console.log('Loading state:', loading);
+    }, 1000);
+
     return (
       <div className="flex items-center justify-center min-h-screen">
         <SidebarLoadingFallback />
+        <p className="mt-4 text-gray-500">Loading organizations...</p>
       </div>
     );
   }
+
+  // Debug: Log the organizations data to see if it's loading
+  console.log('Organizations data:', organizations);
+  console.log('Loading state:', loading);
 
   return(
       <div className="p-6 space-y-6">
@@ -129,6 +149,14 @@ function Orgination() {
             >
               <Users className="h-4 w-4 mr-2" />
               View Hierarchy
+            </Button>
+            <Button
+              onClick={() => navigate("/defense-mapping")}
+              variant="outline"
+              className="border-yellow-500/30 text-yellow-500/90 hover:bg-yellow-500/20"
+            >
+              <Shield className="h-4 w-4 mr-2" />
+              Defense Mapping
             </Button>
           </div>
           
@@ -323,7 +351,7 @@ function Orgination() {
                   <TableRow key={org.id}>
                     {columns.filter(col => columnVisibility[col.key]).map(col => (
                       <TableCell key={col.key}>
-                        {col.key === 'avatar' && <img src={org.avatar} alt={org.name} className="w-10 h-10 rounded-full" />}
+                        {col.key === 'logo' && <img src={org.logo || 'https://dummyimage.com/40x40/000/fff&text=Logo'} alt={`${org.name} logo`} className="w-10 h-10 rounded" />}
                         {col.key === 'name' && org.name}
                         {col.key === 'email' && org.email}
                         {col.key === 'phone' && org.phone}

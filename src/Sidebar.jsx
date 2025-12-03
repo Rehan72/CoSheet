@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, User, X, Columns2,SheetIcon } from "lucide-react";
+import { Home, User, X, Columns2, SheetIcon, Users, Shield, User2Icon, OrigamiIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { User2Icon } from "lucide-react";
-import { OrigamiIcon } from "lucide-react";
 
 
 function Sidebar({ sidebarOpen, setSidebarOpen }) {
@@ -17,7 +15,10 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const menu = [
     { name: "Dashboard", path: "/dashboard", icon: <Home size={18} /> },
     { name: "Orgination", path: "/orgination", icon: <OrigamiIcon size={18} /> },
-    { name: "UserList", path: "/userlist", icon: <User2Icon size={18} /> },
+    { name: "Organization Hierarchy", path: "/organization-hierarchy", icon: <Users size={18} /> },
+    { name: "Admin List", path: "/admin-list", icon: <Users size={18} /> },
+    { name: "Defense Mapping", path: "/defense-mapping", icon: <Shield size={18} /> },
+    { name: "User List", path: "/user-list", icon: <User2Icon size={18} /> },
     { name: "Co-Sheet", path: "/cosheet", icon: <SheetIcon size={18} /> },
     { name: "Profile", path: "/profile", icon: <User size={18} /> },
     
@@ -116,7 +117,20 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
         {/* Navigation Menu */}
         <nav className="p-3 space-y-2">
           {menu.map((item) => {
-            const active = pathname === item.path;
+            // Check if current pathname matches or starts with the menu item path for nested routes
+            // Also handle special cases like add/edit pages that should be associated with their parent menu
+            let active = pathname === item.path || pathname.startsWith(item.path + '/');
+
+            // Special case: Add pages should be associated with their parent list pages
+            if (!active) {
+              if (item.path === 'admin-list' && (pathname.startsWith('/add-admin') || pathname.startsWith('/admin-list/add-admin'))) {
+                active = true;
+              } else if (item.path === 'orgination' && pathname.startsWith('/orgination/')) {
+                active = true;
+              } else if (item.path === 'organization-hierarchy' && (pathname.startsWith('/organization-hierarchy/') || pathname === '/organization-hierarchy')) {
+                active = true;
+              }
+            }
 
             return (
               <motion.div

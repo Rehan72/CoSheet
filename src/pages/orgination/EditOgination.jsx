@@ -1,17 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
 import { Textarea } from "../../components/ui/textarea";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Building, Mail, Phone, MapPin, User, Globe, Briefcase, FileText, Upload } from "lucide-react";
 import useOrganizationStore from "../../stores/organizationStore";
-import { X } from "lucide-react";
 
-function AddOgination() {
+function EditOgination() {
   const navigate = useNavigate();
-  const createOrganization = useOrganizationStore(state => state.createOrganization);
+  const { orgId } = useParams();
+  const { organizations, updateOrganization, fetchOrganizations } = useOrganizationStore();
+
   const [formData, setFormData] = useState({
     orgname: "",
     email: "",
@@ -26,8 +27,42 @@ function AddOgination() {
     description: "",
     image: null,
   });
+
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Fetch organizations and find the one to edit
+    const fetchData = async () => {
+      try {
+        await fetchOrganizations();
+        const orgToEdit = organizations.find(org => org.id === parseInt(orgId));
+        if (orgToEdit) {
+          setFormData({
+            orgname: orgToEdit.name || "",
+            email: orgToEdit.email || "",
+            phone: orgToEdit.phone || "",
+            address: orgToEdit.address || "",
+            country: orgToEdit.country || "",
+            state: orgToEdit.state || "",
+            ownerName: orgToEdit.ownerName || "",
+            ownerPhone: orgToEdit.ownerPhone || "",
+            website: orgToEdit.website || "",
+            industry: orgToEdit.industry || "",
+            description: orgToEdit.description || "",
+            image: orgToEdit.image || null,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch organization:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [orgId, organizations, fetchOrganizations]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -131,15 +166,15 @@ function AddOgination() {
     setIsSubmitting(true);
 
     try {
-      // Create organization using the store
-      await createOrganization(formData);
-      console.log("Organization created successfully:", formData);
+      // Update organization using the store
+      await updateOrganization(parseInt(orgId), formData);
+      console.log("Organization updated successfully:", formData);
       navigate("/orgination");
     } catch (error) {
-      console.error("Failed to create organization:", error);
+      console.error("Failed to update organization:", error);
       setErrors(prev => ({
         ...prev,
-        submit: "Failed to create organization. Please try again."
+        submit: "Failed to update organization. Please try again."
       }));
     } finally {
       setIsSubmitting(false);
@@ -177,15 +212,24 @@ function AddOgination() {
     ],
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <p className="mt-4 text-gray-500">Loading organization data...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-blue-700 dark:text-blue-300">
-            Add Organization
+            Edit Organization
           </h1>
           <p className="text-blue-500/80 mt-1">
-            Create a new organization
+            Update organization details
           </p>
         </div>
         <Button
@@ -200,52 +244,34 @@ function AddOgination() {
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-blue-500/20 p-6 backdrop-blur-sm">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Organization Logo Section */}
-          <div className="bg-white/50 dark:bg-gray-800/30 border border-blue-500/20 rounded-xl p-6 backdrop-blur-sm">
-            <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-4 flex items-center gap-2">
-              <Building className="h-5 w-5" />
-              Organization Logo
-            </h2>
-            <div className="flex items-center gap-6">
-              <div className="relative">
-                {formData.image ? (
-                  <img
-                    src={URL.createObjectURL(formData.image)}
-                    alt="Organization Logo"
-                    className="w-24 h-24 rounded-full border-4 border-blue-500/20 object-cover"
-                  />
-                ) : (
-                  <div className="w-24 h-24 rounded-full bg-blue-500/20 flex items-center justify-center border-4 border-blue-500/20">
-                    <Building className="h-10 w-10 text-blue-500/70" />
-                  </div>
-                )}
+          <div className="flex items-start gap-6 p-6 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-xl border border-blue-500/20">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-3">
+                <Upload className="h-5 w-5 text-blue-600" />
+                <Label htmlFor="image" className="text-blue-600/80 font-semibold text-lg">Organization Logo</Label>
               </div>
-              <div className="flex-1">
-                <Label htmlFor="image" className="text-blue-600/80 dark:text-blue-400/80">
-                  Upload Organization Logo
-                </Label>
-                <div className="flex gap-2 mt-1">
-                  <Input
-                    id="image"
-                    name="image"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="border-blue-500/30 focus:border-blue-500 bg-white/50 dark:bg-gray-800/50 file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                  />
-                  {formData.image && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setFormData(prev => ({ ...prev, image: null }));
-                      }}
-                      className="border-red-500/30 text-red-500/90 hover:bg-red-500/20"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
+              <Input
+                id="image"
+                name="image"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="border-blue-500/30 focus:border-blue-500 bg-white/50 dark:bg-gray-800/50 file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              />
+            </div>
+            <div className="w-28 h-28 rounded-full border-2 border-dashed border-blue-500/40 flex items-center justify-center overflow-hidden bg-white/50 dark:bg-gray-800/50 shadow-lg flex-shrink-0">
+              {formData.image ? (
+                <img
+                  src={typeof formData.image === 'string' ? formData.image : URL.createObjectURL(formData.image)}
+                  alt="Organization Logo"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="text-center">
+                  <Building className="h-8 w-8 text-blue-500/60 mx-auto mb-1" />
+                  <span className="text-blue-500/60 text-xs font-medium">Upload Logo</span>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
@@ -270,7 +296,6 @@ function AddOgination() {
                   onBlur={handleBlur}
                   placeholder="Enter organization name"
                   className={`border-blue-500/30 focus:border-blue-500 bg-white/50 dark:bg-gray-800/50 ${errors.orgname ? 'border-red-500' : ''}`}
-
                 />
                 {errors.orgname && <p className="text-red-500 text-sm mt-1">{errors.orgname}</p>}
               </div>
@@ -491,7 +516,7 @@ function AddOgination() {
               className="bg-blue-500 hover:bg-blue-600 text-white"
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Adding Organization..." : "Add Organization"}
+              {isSubmitting ? "Updating Organization..." : "Update Organization"}
             </Button>
           </div>
 
@@ -507,4 +532,4 @@ function AddOgination() {
   );
 }
 
-export default AddOgination;
+export default EditOgination;

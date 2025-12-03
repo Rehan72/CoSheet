@@ -121,6 +121,23 @@ const useOrganizationStore = create((set, get) => ({
     }
   },
 
+  updateAdminInOrganization: async (orgId, adminId, adminData) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await MockOrganizationService.updateAdminInOrganization(orgId, adminId, adminData);
+      set((state) => ({
+        organizationAdmins: state.organizationAdmins.map(admin =>
+          admin.id === adminId ? response.data : admin
+        ),
+        loading: false
+      }));
+      return response.data;
+    } catch (error) {
+      set({ error: error.message || 'Failed to update admin in organization', loading: false });
+      throw error;
+    }
+  },
+
   fetchAdminUsers: async (orgId, adminId) => {
     set({ loading: true, error: null });
     try {

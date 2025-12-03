@@ -1,6 +1,7 @@
 import * as React from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "./button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select"
 import { cn } from "@/lib/utils"
 
 const Calendar = React.forwardRef(({ className, ...props }, ref) => {
@@ -105,8 +106,8 @@ const Calendar = React.forwardRef(({ className, ...props }, ref) => {
       )}
       {...props}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      {/* Header with Month/Year Selection */}
+      <div className="flex items-center justify-between mb-4 gap-2">
         <Button
           variant="ghost"
           size="sm"
@@ -116,9 +117,50 @@ const Calendar = React.forwardRef(({ className, ...props }, ref) => {
           <ChevronLeft className="h-4 w-4" />
         </Button>
 
-        <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300">
-          {monthNames[currentMonth]} {currentYear}
-        </h2>
+        <div className="flex items-center gap-2">
+          {/* Month Selection */}
+          <Select
+            value={monthNames[currentMonth]}
+            onValueChange={(value) => {
+              const monthIndex = monthNames.indexOf(value);
+              setCurrentDate(new Date(currentYear, monthIndex, 1));
+            }}
+          >
+            <SelectTrigger className="h-8 text-sm border-blue-500/30 bg-white/50 dark:bg-gray-800/50">
+              <SelectValue placeholder={monthNames[currentMonth]} />
+            </SelectTrigger>
+            <SelectContent>
+              {monthNames.map((month) => (
+                <SelectItem key={month} value={month}>
+                  {month}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Year Selection */}
+          <Select
+            value={currentYear.toString()}
+            onValueChange={(value) => {
+              const year = parseInt(value);
+              setCurrentDate(new Date(year, currentMonth, 1));
+            }}
+          >
+            <SelectTrigger className="h-8 w-20 text-sm border-blue-500/30 bg-white/50 dark:bg-gray-800/50">
+              <SelectValue placeholder={currentYear.toString()} />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 10 }, (_, i) => {
+                const year = currentYear - 5 + i;
+                return (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+        </div>
 
         <Button
           variant="ghost"

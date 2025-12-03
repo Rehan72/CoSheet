@@ -1,0 +1,3 @@
+Id,FullName,EmailAddress,UserRole,PhoneNumber,DepartmentName,AccountStatus,StreetAddress,CountryName,StateProvince
+1,John Doe,john@example.com,admin,+1234567890,IT,active,"123 Main St",United States,California
+2,Jane Smith,jane@example.com,manager,+1987654321,HR,active,"456 Oak Ave",United Kingdom,London

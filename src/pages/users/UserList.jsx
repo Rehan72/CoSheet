@@ -661,7 +661,7 @@ function UserList() {
 
   // Handle add new user
   const handleAddUser = () => {
-    navigate("/adduser");
+    navigate("/user-list/add-user");
   };
 
   if (loading) {

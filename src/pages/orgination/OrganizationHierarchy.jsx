@@ -9,7 +9,7 @@ import { Input } from "../../components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../../components/ui/dialog";
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from "../../components/ui/breadcrumb";
-import { Plus, Users, UserPlus, UserMinus, Eye, Edit, Trash2, ChevronRight, ChevronDown, Search, Filter, RefreshCw } from "lucide-react";
+import { Plus, Users, UserPlus, UserMinus, Eye, Edit, Trash2, ChevronRight, ChevronDown, Search, Filter, RefreshCw, Shield } from "lucide-react";
 import { SidebarLoadingFallback } from "../../components/LoadingFallback";
 
 function OrganizationHierarchy() {
@@ -354,6 +354,22 @@ function OrganizationHierarchy() {
             className="border-blue-500/30 text-blue-500/90 hover:bg-blue-500/20"
           >
             Back to Organizations
+          </Button>
+          <Button
+            onClick={() => navigate(`/admin-list/${orgId}`)}
+            variant="outline"
+            className="border-green-500/30 text-green-500/90 hover:bg-green-500/20"
+          >
+            <Users className="h-4 w-4 mr-2" />
+            View Admins
+          </Button>
+          <Button
+            onClick={() => navigate(`/defense-mapping/${orgId}`)}
+            variant="outline"
+            className="border-yellow-500/30 text-yellow-500/90 hover:bg-yellow-500/20"
+          >
+            <Shield className="h-4 w-4 mr-2" />
+            Defense Mapping
           </Button>
           {currentOrganization && (
             <Dialog open={showAddAdminDialog} onOpenChange={setShowAddAdminDialog}>
