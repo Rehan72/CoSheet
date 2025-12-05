@@ -15,23 +15,23 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 const columnConfig = [
-  { key: "brand", label: "Brand category", bg: "bg-yellow-50" },
-  { key: "items", label: "Items", bg: "bg-yellow-50" },
-  { key: "spec", label: "Specification", bg: "bg-yellow-50" },
+  { key: "brand", label: "Brand category", bg: "bg-yellow-50 dark:bg-yellow-900/20" },
+  { key: "items", label: "Items", bg: "bg-yellow-50 dark:bg-yellow-900/20" },
+  { key: "spec", label: "Specification", bg: "bg-yellow-50 dark:bg-yellow-900/20" },
 
-  { key: "code", label: "Code", bg: "bg-red-50" },
-  { key: "year", label: "Year", bg: "bg-red-50" },
-  { key: "number", label: "Number", bg: "bg-red-50" },
+  { key: "code", label: "Code", bg: "bg-red-50 dark:bg-red-900/20" },
+  { key: "year", label: "Year", bg: "bg-red-50 dark:bg-red-900/20" },
+  { key: "number", label: "Number", bg: "bg-red-50 dark:bg-red-900/20" },
 
-  { key: "net", label: "Net", bg: "bg-blue-50" },
-  { key: "unit", label: "Unit", bg: "bg-blue-50" },
-  { key: "rate", label: "Rate", bg: "bg-blue-50" },
+  { key: "net", label: "Net", bg: "bg-blue-50 dark:bg-blue-900/20" },
+  { key: "unit", label: "Unit", bg: "bg-blue-50 dark:bg-blue-900/20" },
+  { key: "rate", label: "Rate", bg: "bg-blue-50 dark:bg-blue-900/20" },
 
-  { key: "amount", label: "Amount", bg: "bg-green-50" },
-  { key: "material", label: "Material", bg: "bg-green-50" },
-  { key: "emission", label: "Emission", bg: "bg-green-50" },
+  { key: "amount", label: "Amount", bg: "bg-green-50 dark:bg-green-900/20" },
+  { key: "material", label: "Material", bg: "bg-green-50 dark:bg-green-900/20" },
+  { key: "emission", label: "Emission", bg: "bg-green-50 dark:bg-green-900/20" },
 
-  { key: "remarks", label: "AI Remarks", bg: "bg-purple-50" },
+  { key: "remarks", label: "AI Remarks", bg: "bg-purple-50 dark:bg-purple-900/20" },
 ];
 
 // Generate unique IDs for each row
@@ -82,15 +82,15 @@ function SortableRow({ row, updateRow, removeRow }) {
     <div
       ref={setNodeRef}
       style={style}
-      className={`grid grid-cols-[40px_repeat(13,1fr)] border-b hover:bg-gray-50 ${
-        isDragging ? "bg-blue-50 shadow-md z-10" : ""
+      className={`grid grid-cols-[40px_repeat(13,1fr)] border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 ${
+        isDragging ? "bg-blue-50 dark:bg-blue-900/50 shadow-md z-10" : ""
       }`}
     >
       {/* Drag handle */}
       <div
         {...listeners}
         {...attributes}
-        className="flex justify-center items-center cursor-move text-gray-400 hover:text-black border-l"
+        className="flex justify-center items-center cursor-move text-gray-400 dark:text-gray-300 hover:text-black dark:hover:text-white border-l dark:border-gray-600"
       >
         ☰
       </div>
@@ -103,17 +103,17 @@ function SortableRow({ row, updateRow, removeRow }) {
           <input
             value={row[col.key] || ""}
             onChange={(e) => handleInputChange(col.key, e.target.value)}
-            className="w-full bg-transparent outline-none border-none focus:ring-1 focus:ring-blue-500 rounded px-1"
+            className="w-full bg-transparent outline-none border-none focus:ring-1 focus:ring-blue-500 rounded px-1 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
             placeholder={`Enter ${col.label.toLowerCase()}`}
           />
         </div>
       ))}
 
       {/* Remove Row */}
-      <div className="flex justify-center items-center border-l">
+      <div className="flex justify-center items-center border-l dark:border-gray-600">
         <button
           onClick={() => removeRow(row.id)}
-          className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors"
+          className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 rounded-full hover:bg-red-50 dark:hover:bg-red-900/50 transition-colors"
           title="Remove row"
         >
           ✕
@@ -183,9 +183,9 @@ export default function SmartSheetTable() {
   };
 
   return (
-    <div className="p-6 bg-white rounded-xl shadow max-w-full overflow-x-auto">
+    <div className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow max-w-full overflow-x-auto">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Smart Sheet</h2>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white">Smart Sheet</h2>
         <div className="flex gap-2">
           <button
             onClick={addRow}
@@ -205,12 +205,12 @@ export default function SmartSheetTable() {
       </div>
 
       {/* Table Container */}
-      <div className="border rounded-lg overflow-hidden">
+      <div className="border dark:border-gray-600 rounded-lg overflow-hidden">
         {/* Table Header */}
-        <div className="grid grid-cols-[40px_repeat(13,1fr)] bg-gray-100 border-b text-xs font-semibold">
+        <div className="grid grid-cols-[40px_repeat(13,1fr)] bg-gray-100 dark:bg-gray-700 border-b dark:border-gray-600 text-xs font-semibold">
           <div className="border-l"></div>
           {columnConfig.map((col) => (
-            <div key={col.key} className="px-3 py-3 border-l uppercase tracking-wide text-gray-700">
+            <div key={col.key} className="px-3 py-3 border-l dark:border-gray-600 uppercase tracking-wide text-gray-700 dark:text-gray-200">
               {col.label}
             </div>
           ))}
@@ -240,7 +240,7 @@ export default function SmartSheetTable() {
       </div>
 
       {/* Footer Info */}
-      <div className="mt-4 text-sm text-gray-500 flex justify-between items-center">
+      <div className="mt-4 text-sm text-gray-500 dark:text-gray-400 flex justify-between items-center">
         <span>Total Rows: {rows.length}</span>
         <span>Drag the ☰ icon to reorder rows</span>
       </div>
@@ -249,13 +249,13 @@ export default function SmartSheetTable() {
       <div className="mt-4 flex gap-2">
         <button
           onClick={() => setRows([createDefaultRow()])}
-          className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+          className="px-3 py-1 text-sm bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 rounded hover:bg-red-200 dark:hover:bg-red-800/50 transition-colors"
         >
           Reset to One Row
         </button>
         <button
           onClick={() => setRows([])}
-          className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+          className="px-3 py-1 text-sm bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 rounded hover:bg-red-200 dark:hover:bg-red-800/50 transition-colors"
         >
           Clear All
         </button>

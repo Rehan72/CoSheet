@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Home, User, X, Columns2, SheetIcon, Users, Shield, User2Icon, OrigamiIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
+import EventIcon from '../src/assets/icons/confetti_4376478.svg'
+import { Calendar } from "lucide-react";
 
 function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const [isOpen, setIsOpen] = useState(true);
@@ -21,6 +22,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
     { name: "User List", path: "/user-list", icon: <User2Icon size={18} /> },
     { name: "Co-Sheet", path: "/cosheet", icon: <SheetIcon size={18} /> },
     { name: "Profile", path: "/profile", icon: <User size={18} /> },
+    { name: "Event", path: "/event", icon:<Calendar size={18} /> },
     
   ];
 

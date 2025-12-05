@@ -117,34 +117,34 @@ function CoSheet() {
   };
 
   return (
-    <div className="w-full h-full bg-gray-50 flex flex-col">
+    <div className="w-full h-full bg-gray-50 dark:bg-gray-900 flex flex-col transition-colors duration-300">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-3 w-full overflow-x-auto">
+      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-3 w-full overflow-x-auto">
           <div className="flex items-center justify-between flex-wrap gap-4 w-full">
           <div className="flex items-center space-x-3">
             <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-2 rounded-lg">
               <Calculator className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">CoSheet</h1>
-              <p className="text-sm text-gray-500">Intelligent Spreadsheet</p>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">CoSheet</h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Intelligent Spreadsheet</p>
             </div>
           </div>
           
           <div className="flex items-center space-x-4">
-            <div className="flex bg-white border border-gray-300 rounded-lg px-3 py-1 w-48">
-              <Search className="h-4 w-4 text-gray-400 mt-1" />
+            <div className="flex bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1 w-48">
+              <Search className="h-4 w-4 text-gray-400 dark:text-gray-300 mt-1" />
               <input 
                 type="text" 
                 placeholder="Search cells..."
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
-                className="ml-2 outline-none bg-transparent w-full"
+                className="ml-2 outline-none bg-transparent w-full text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
               />
               {searchQuery && (
                 <button 
                   onClick={() => handleSearch('')}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100"
                 >
                   ×
                 </button>
@@ -158,8 +158,8 @@ function CoSheet() {
               }}
               className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
                 showCollaboration
-                  ? 'bg-blue-100 text-blue-700 border border-blue-300'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                  ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-600'
+                  : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
               }`}
             >
               <Users className="h-4 w-4" />
@@ -213,7 +213,7 @@ function CoSheet() {
           />
 
           {/* View Tabs */}
-          <div className="bg-white border-b border-gray-200 px-6 overflow-x-auto">
+          <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 overflow-x-auto">
             <div className="flex space-x-4 whitespace-nowrap">
               {[
                 { id: 'grid', label: 'Grid', icon: Zap },
@@ -225,8 +225,8 @@ function CoSheet() {
                   onClick={() => setActiveView(view.id)}
                   className={`flex items-center px-4 py-2 border-b-2 transition-colors ${
                     activeView === view.id
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                   }`}
                 >
                   <view.icon className="h-4 w-4 mr-2" />
@@ -237,7 +237,7 @@ function CoSheet() {
           </div>
 
           {/* Spreadsheet Area */}
-          <div className="flex-1 overflow-auto bg-white w-full">
+          <div className="flex-1 overflow-auto bg-white dark:bg-gray-800 w-full">
             <ErrorBoundary>
               <Suspense fallback={<GridLoadingFallback />}>
                 {activeView === 'grid' && (
@@ -281,7 +281,7 @@ function CoSheet() {
         {showAISidebar && (
           <ErrorBoundary>
             <Suspense fallback={<SidebarLoadingFallback />}>
-              <aside className="w-96 h-full bg-white border-l-2 border-blue-500 flex flex-col overflow-hidden shrink-0 z-40 shadow-lg">
+              <aside className="w-96 h-full bg-white dark:bg-gray-800 border-l-2 border-blue-500 dark:border-blue-400 flex flex-col overflow-hidden shrink-0 z-40 shadow-lg">
                 <AISidebar
                   onClose={() => setShowAISidebar(false)}
                   onAICommand={processAICommand}
@@ -298,7 +298,7 @@ function CoSheet() {
         {showCollaboration && !showAISidebar && (
           <ErrorBoundary>
             <Suspense fallback={<SidebarLoadingFallback />}>
-              <aside className="w-96 h-full bg-white border-l-2 border-purple-500 flex flex-col overflow-hidden shrink-0 z-40 shadow-lg">
+              <aside className="w-96 h-full bg-white dark:bg-gray-800 border-l-2 border-purple-500 dark:border-purple-400 flex flex-col overflow-hidden shrink-0 z-40 shadow-lg">
                 <CollaborationPanel
                   onClose={() => setShowCollaboration(false)}
                   users={users}

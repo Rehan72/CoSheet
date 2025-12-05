@@ -69,17 +69,17 @@ function SortableRow({ item, index, onRemove, isDragging }) {
     <div
       ref={setNodeRef}
       style={style}
-      className={`grid grid-cols-12 gap-4 px-6 py-4 border-b border-gray-200 transition-colors duration-200 ${
+      className={`grid grid-cols-12 gap-4 px-6 py-4 border-b border-gray-200 dark:border-gray-600 transition-colors duration-200 ${
         isDragging
-          ? 'bg-blue-50 shadow-md z-10'
-          : 'bg-white hover:bg-gray-50'
+          ? 'bg-blue-50 dark:bg-blue-900/50 shadow-md z-10'
+          : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
       }`}
     >
-      <div className="col-span-1 flex items-center text-gray-500">
+      <div className="col-span-1 flex items-center text-gray-500 dark:text-gray-400">
         <div
           {...listeners}
           {...attributes}
-          className="cursor-move mr-2 text-gray-400 hover:text-black"
+          className="cursor-move mr-2 text-gray-400 dark:text-gray-300 hover:text-black dark:hover:text-white"
         >
           <svg
             className="w-5 h-5"
@@ -97,10 +97,10 @@ function SortableRow({ item, index, onRemove, isDragging }) {
         </div>
         {index + 1}
       </div>
-      <div className="col-span-3 font-medium text-gray-900">
+      <div className="col-span-3 font-medium text-gray-900 dark:text-white">
         {item.name}
       </div>
-      <div className="col-span-3 text-gray-600">
+      <div className="col-span-3 text-gray-600 dark:text-gray-300">
         {item.email}
       </div>
       <div className="col-span-2">
@@ -218,13 +218,13 @@ const TableWithDnD = () => {
     <div className="p-6 max-w-6xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">User Management</h1>
-        <p className="text-gray-600">Drag and drop to reorder users</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">User Management</h1>
+        <p className="text-gray-600 dark:text-gray-400">Drag and drop to reorder users</p>
       </div>
 
       {/* Add New Item Form */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6 border border-gray-200">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Add New User</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 border border-gray-200 dark:border-gray-700">
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">Add New User</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           <input
             type="text"
@@ -232,7 +232,7 @@ const TableWithDnD = () => {
             placeholder="Full Name"
             value={newItem.name}
             onChange={handleInputChange}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
           <input
             type="email"
@@ -240,13 +240,13 @@ const TableWithDnD = () => {
             placeholder="Email Address"
             value={newItem.email}
             onChange={handleInputChange}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
           <select
             name="role"
             value={newItem.role}
             onChange={handleInputChange}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="Developer">Developer</option>
             <option value="Designer">Designer</option>
@@ -256,7 +256,7 @@ const TableWithDnD = () => {
             name="status"
             value={newItem.status}
             onChange={handleInputChange}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="Active">Active</option>
             <option value="Inactive">Inactive</option>
@@ -271,7 +271,7 @@ const TableWithDnD = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -280,7 +280,7 @@ const TableWithDnD = () => {
         >
           <SortableContext items={items.map(item => item.id)} strategy={verticalListSortingStrategy}>
             {/* Table Header */}
-            <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-gray-50 border-b border-gray-200 font-semibold text-gray-700">
+            <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600 font-semibold text-gray-700 dark:text-gray-200">
               <div className="col-span-1">#</div>
               <div className="col-span-3">Name</div>
               <div className="col-span-3">Email</div>
@@ -318,14 +318,14 @@ const TableWithDnD = () => {
                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
               />
             </svg>
-            <p className="text-gray-500 text-lg">No users found</p>
-            <p className="text-gray-400">Add a new user to get started</p>
+            <p className="text-gray-500 dark:text-gray-400 text-lg">No users found</p>
+            <p className="text-gray-400 dark:text-gray-500">Add a new user to get started</p>
           </div>
         )}
       </div>
 
       {/* Footer Stats */}
-      <div className="mt-4 text-sm text-gray-500">
+      <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
         Total Users: {items.length} | 
         Active: {items.filter(item => item.status === 'Active').length} | 
         Inactive: {items.filter(item => item.status === 'Inactive').length}

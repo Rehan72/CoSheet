@@ -14,6 +14,8 @@ import DefenseMapping from "../pages/admin/DefenseMapping";
 import EditAdmin from "../pages/admin/EditAdmin";
 import AddAdmin from "../pages/admin/AddAdmin";
 import BulkAddAdmin from "../pages/admin/BulkAddAdmin";
+import Event from "../pages/events/Event";
+import CreateEvent from "../pages/events/CreateEvent"
 
 
 
@@ -120,6 +122,19 @@ export default [
      //permission: RoutePermission?.PLATFORM_ADMIN,
      exact: true
    },
+   {
+     element: Event,
+     path: `event`,
+     //permission: RoutePermission?.PLATFORM_ADMIN,
+     exact: true
+   },
+   {
+     element: CreateEvent,
+     path: `event/create`,
+     //permission: RoutePermission?.PLATFORM_ADMIN,
+     exact: true
+   },
+
 
    
 
